@@ -1,0 +1,111 @@
+% Exemplo de relatório tecnico do IC (http://www.ic.unicamp.br/~reltech)
+
+\documentclass[11pt,twoside]{article}
+\usepackage{techrep-ic}
+
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+
+\usepackage
+[pdftitle={Avaliacao do Impacto de Tecnicas de Formacao de Regioes no Gerenciamento de Code Cache},
+pdfauthor={G. Vieira, A. Carvalho, G. Valente, G. Piccoli, J. de Lucca},
+pdfsubject={Relatorio Final},
+pdfkeywords={VMs, Region Formation, Code Cache, RAIn, x86},
+pdfpagemode={UseNone},
+bookmarks,
+pdfstartview={FitH},
+colorlinks,
+linkcolor={black},
+citecolor={black},
+urlcolor={blue},
+hyperindex]
+{hyperref}
+
+
+\begin{document}
+
+%%% PÁGINA DE CAPA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Número do relatório
+\TRNumber{99}
+
+% DATA DE PUBLICAÇÃO (PARA A CAPA)
+%
+\TRYear{13}  % Dois dígitos apenas
+\TRMonth{12} % Numérico, 01-12
+
+% LISTA DE AUTORES PARA CAPA (sem afiliações).
+\TRAuthor{G. Vieira, A. Carvalho, G. Valente,\\G. Piccoli, J. de Lucca}
+
+% TÍTULO PARA A CAPA (use \\ para forçar quebras de linha).
+\TRTitle{Avaliação do Impacto de Técnicas de Formação\\ de Regiões no Gerenciamento de Code Cache}
+
+\TRMakeCover
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% O que segue é apenas uma sugestão - sinta-se à vontade para
+% usar seu formato predileto, desde que as margens tenham pelo
+% menos 25mm nos quatro lados, e o tamanho do fonte seja pelo menos
+% 11pt. Certifique-se também de que o título e lista de autores
+% estão reproduzidos na íntegra na página 1, a primeira depois da
+% página de capa.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Nomes de autores ABREVIADOS e titulo ABREVIADO,
+% para cabeçalhos em cada página.
+%
+\markboth{Vieira, Carvalho, Valente, Piccoli e de Lucca}{Teste}
+\pagestyle{myheadings}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TÍTULO e NOMES DOS AUTORES, completos, para a página 1.
+% Use "\\" para quebrar linhas, "\and" para separar autores.
+%
+\title{Avaliação do Impacto de Técnicas de Formação\\ de Regiões no Gerenciamento de Code Cache}
+
+\author{ Gilvan Vieira\thanks{IC} \and
+Alisson Linhares\footnotemark[1] \and Gilberto Valente\thanks{FEM} \and Guilherme Piccoli\footnotemark[1] \and Jonatas de Lucca\thanks{Eldorado} }
+
+\date{2013-12-11} %13,12,11 kkkkk
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract} 
+  Resumo % dois espaços antes do inicio da linha
+  
+\end{abstract}
+
+\section{Introdução}
+Introdução
+
+\subsection{Motivação}
+Motivação
+
+\section{Objetivos}
+Objetivos
+
+\section{Trabalhos Relacionados}
+Trabalhos Relacionados
+
+\section{Metodologia}
+Metodologia\cite{thesis-zinsly}
+
+\subsection{algumas...}
+tipo code cache, formação de regioes, metricas
+
+\section{Resultados}
+Resultados
+
+\section{Conclusões}
+Conclusões
+
+
+% bibliografia
+\bibliographystyle{ieeetr}
+\bibliography{bibliografia}
+
+
+\end{document}
