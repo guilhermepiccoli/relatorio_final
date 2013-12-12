@@ -41,6 +41,7 @@ hyperindex]
 
 \begin{document}
 
+%\hyphenation{ins-tru-ções}
 %%% PÁGINA DE CAPA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
 % Número do relatório
@@ -72,8 +73,8 @@ hyperindex]
 %
 \title{Avaliação do Impacto de Técnicas de Formação\\ de Regiões no Gerenciamento de \emph{Code Cache}}
 
-\author{Gilvan Vieira\thanks{IC} \and
-Alisson Linhares\footnotemark[1] \and Gilberto Valente\thanks{FEM} \and Guilherme Piccoli\footnotemark[1] \and Jonatas de Lucca\thanks{Eldorado}}
+\author{Gilvan Vieira\thanks{Instituto de Computação - Universidade Estadual de Campinas (UNICAMP)} \and
+Alisson Linhares\footnotemark[1] \and Gilberto Valente\thanks{Faculdade de Engenharia Mecânica - Universidade Estadual de Campinas (UNICAMP)} \and Guilherme Piccoli\footnotemark[1] \and Jonatas de Lucca\thanks{Instituto Eldorado}}
 
 \date{2013-12-11}
 
@@ -91,7 +92,7 @@ Alisson Linhares\footnotemark[1] \and Gilberto Valente\thanks{FEM} \and Guilherm
 
 
 \section{Introdução}
-Máquinas virtuais são ambientes que buscam imitar o comportamento de uma entidade real, seja ela um sistema operacional ou uma máquina física. As máquinas virtuais são sempre implementadas como camadas de \emph{software}, de modo que podem estar \qq{acima} do sistema operacional, como máquinas de processo, ou mais próximas do \emph{hardware}, como \emph{co-designed virtual machines}. Independente do tipo de máquina virtual, sua implementação em geral recai em duas técnicas para emular o comportamento de sua entidade virtualizada (que doravante será denominada \guest): interpretação ou tradução. 
+Uma máquina virtual, como definida originalmente por Popek e Goldberg~\cite{PG74}, é uma duplicata, isolada e eficiente, de uma máquina real. Atualmente o termo é usado de forma mais genérica e não está necessariamente associado à duplicata de máquinas implementadas em \emph{hardware}.  As máquinas virtuais são sempre implementadas como camadas de \emph{software}, de modo que podem estar \qq{acima} do sistema operacional, como máquinas de processo, ou mais próximas do \emph{hardware}, como \emph{co-designed virtual machines}. Independente do tipo de máquina virtual, sua implementação em geral recai em duas técnicas para emular o comportamento de sua entidade virtualizada (que doravante será denominada \guest): interpretação ou tradução. 
 
 Interpretação é uma técnica relativamente elementar, que busca executar as instruções da arquitetura \guest~uma-a-uma no \host (ambiente real em que a máquina virtual é executada), de modo que, embora seja precisa e mais simples de implementar, a técnica peca no desempenho. Já a tradução, que pode ser estática ou dinâmica, consiste em traduzir blocos de código da arquitetura \guest~para código nativo da arquitetura \host, de tal modo que o desempenho é melhor que a interpretação, mas a dificuldade em se implementar tradutores de código é maior.
 
