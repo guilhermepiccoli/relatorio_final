@@ -1,7 +1,9 @@
 % Exemplo de relatório tecnico do IC (http://www.ic.unicamp.br/~reltech)
 
-\documentclass[12pt,twoside]{article}
+\documentclass[11pt,twoside]{article}
 \usepackage{techrep-ic}
+
+\linespread{1.3}
 
 \usepackage[brazil]{babel}
 \usepackage[utf8]{inputenc}
@@ -213,7 +215,7 @@ Usando o código da tabela T como exemplo. Se o valor da variável LOOP\_TOTAL f
 NÃO COLOQUEI A TABELA DESGRAÇADA DO JONATAS - DA UM TRAMPO DO CÃO. POR FAVOR, ALGUÉM REESCREVA A TABELA NUMA MANEIRA SEM TABELA! O GRAFO ESTÁ ABAIXO...
 \end{large}
 
-\begin{figure}[!h!]
+\begin{figure}[!ht]
 \includegraphics[scale=0.35]{./figs/validacao}
 \caption{Grafo de validação.}
 \label{fig-validacao}
@@ -248,53 +250,71 @@ Além de apresentar um aquecimento incremental, a política de perfilamento orig
 
 Buscando melhorar a abordagem de perfilamento adotada pelo RAIn, desenvolvemos duas técnicas de resfriamento do \emph{profiler}, o \emph{full reset} e o \emph{partial reset}. A técnica de \emph{full reset} consiste em resetar todos endereços perfilados sempre que uma região é criada. Isso garante que somente as regiões que são utilizadas muito frequentemente, em fases específicas do programa, consigam atingir o limiar mínimo necessário para serem consideradas quentes. Já as técnicas de \emph{partial reset}, reinicializa somente os contadores dos endereços que são alvos de salto e fazem parte das regiões. Isto garante que após a remoção de uma região, essa, por sua vez, só  poderá ser inserida novamente na \cache~quando atingir o limiar de aquecimento imposto pelo \emph{profiler}.
 
-Com base nos experimentos realizados, verificamos que o total de traduções geradas pelo NET, na ausência de \cache~e fazendo uso da política original de perfilamento, é superior a taxa de traduções quando aplicamos algumas das técnicas de resfriamento sugeridas. Entretanto, na presença de \cache~, a formação de regiões passa a ser afetada pela política de gerenciamento de \cache~, sempre que há uma necessidade de liberar espaços para novas traduções. Assim, quanto maior a pressão sobre a \cache~, mais regiões serão removidas, e consequentemente, mais instruções serão retraduzidas. Este efeito pode ser visualizado na Figura {\large Qual?}, onde a medida que a pressão sobre a \cache~cresce, o número total de instruções traduzidas aumenta. Contudo, este aumento é muito menor quando o perfilamento utiliza algumas das políticas de resfriamento sugeridas.
+Com base nos experimentos realizados, verificamos que o total de traduções geradas pelo NET, na ausência de \cache~e fazendo uso da política original de perfilamento, é superior a taxa de traduções quando aplicamos algumas das técnicas de resfriamento sugeridas. Entretanto, na presença de \cache~, a formação de regiões passa a ser afetada pela política de gerenciamento de \cache~, sempre que há uma necessidade de liberar espaços para novas traduções. Assim, quanto maior a pressão sobre a \cache~, mais regiões serão removidas, e consequentemente, mais instruções serão retraduzidas. Este efeito pode ser visualizado na Figura \ref{fig-reset-trans}, onde a medida que a pressão sobre a \cache~cresce, o número total de instruções traduzidas aumenta. Contudo, este aumento é muito menor quando o perfilamento utiliza algumas das políticas de resfriamento sugeridas.
 
-\begin{large}
-NOVAMENTE FIGURA! O INTERESSANTE EH TER TODAS NO MESMO FORMATO!
-\end{large}
-
-
-É interessante notar, que apesar da redução do número total de traduções, a taxa de cobertura com o uso de um \emph{partial reset} é bem próxima da obtida pela política sem reset. Isso se deve ao fato, que o código gerado passa a apresentar uma taxa de completude muito superior, à medida que a pressão da \cache~aumenta, conforme visualizado na figura {\large Qual?}. Isso significa que com o resfriamento do \emph{profiler} as regiões são executadas completamente com uma maior frequência.
-
-
-\begin{large}
-OUTRAS 2 FIGURAS!
-\end{large}
-
-
-\subsection{NET e as políticas de gerenciamento de \emph{cache}}
-\begin{large}
-BETO/GILVAN ESTAVAM, DIGITANDO, POR ISSO EU NAO COLOQUEI ESSA SEÇÃO..
-\end{large}
-
-\begin{large}
-ABAIXO AS FIGURAS \ref{fig-num_regs}, \ref{fig-completude1} e \ref{fig-cobertura1} QUE COLOQUEI COMO MODELO, PARA QUE DEPOIS VOCES POSSAM COLOCAR MAIS...
-\end{large}
-
-\begin{figure}[!h!]
-\includegraphics[scale=0.4]{./figs/regions-number}
-\caption{Número de regiões.}
-\label{fig-num_regs}
+\begin{figure}[!ht]
+	\centering
+\includegraphics[scale=0.4]{./figs/reset-translate-inst}
+\caption{Total de Instruções Traduzidas}
+\label{fig-reset-trans}
 \end{figure}
 
-Agora, 2 figuras lado a lado !
 
-\begin{figure}[!h!]
+É interessante notar, que apesar da redução do número total de traduções, a taxa de cobertura com o uso de um \emph{partial reset} é bem próxima da obtida pela política sem reset. Isso se deve ao fato, que o código gerado passa a apresentar uma taxa de completude muito superior, à medida que a pressão da \cache~aumenta, conforme visualizado nas Figuras \ref{fig-completude1} e \ref{fig-cobertura1}. Isso significa que com o resfriamento do \emph{profiler} as regiões são executadas completamente com uma maior frequência.
+
+\begin{figure}[!ht]
         \centering
         \begin{subfigure}[b]{0.45\textwidth}
-                \includegraphics[width=\textwidth]{./figs/completion-reset}
+                \includegraphics[width=\textwidth]{./figs/reset-completion-ratio}
                 \caption{Completude}
                 \label{fig-completude1}
         \end{subfigure}
         \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
                 \begin{subfigure}[b]{0.45\textwidth}
-                \includegraphics[width=\textwidth]{./figs/region-coverage-reset}
+                \includegraphics[width=\textwidth]{./figs/reset-dynamic-cov}
                 \caption{Cobertura}
                 \label{fig-cobertura1}
         \end{subfigure}
 \caption{Dois graficos lado-a-lado...}
 \end{figure}
+
+
+\subsection{NET e Políticas de Gerenciamento de \emph{Cache}}
+
+No gerenciamento da code cache o número de regiões removidas variam de acordo com a política aplicada. Na Flush When Full todas as regiões presentes na code cache são eliminadas ao mesmo tempo. Já a política aplicada para Coarse Grained FIFO remove um número médio de regiões, em que as regiões são agrupadas em blocos FIFO e dessa forma as regiões pertencentes ao mesmo bloco são eliminadas em conjunto. Por fim, a política que elimina o menor número de regiões é a Fine Grained FIFO, onde uma região é eliminada por vez até que seja possível inserir uma nova região.
+Por consequência quanto maior for o número de regiões eliminadas na técnica de gerenciamento de cache, maior será o número de instruções que serão interpretadas. Como pode ser visto na Figura~\ref{fig:freq_nte}  que exibe o número de instruções interpretadas em relação a redução da cache para cada política de gerenciamento. Como esperado, a Flush When Full interpreta mais instruções. Isso se deve ao fato dessa política remover um número maior de regiões, quando comparada com outras técnicas. Para as políticas de gereciamento FIFO, a Coarse interpreta mais instruções quanto menor for a granularidade, ou seja, maior o tamanho um bloco FIFO. Por fim, A Fine Grained FIFO apresenta melhor resultado ao eliminar poucas regiões por vez tem a necessidade de retraduzir menos em comparação as técnicas anteriores. 
+
+\begin{figure}[!ht]
+	\centering
+\includegraphics[scale=0.4]{./figs/milc-interp-inst}
+\caption{Total de Instruções Emuladas por Interpretação no \emph{milc}}
+\label{fig:freq_nte}
+\end{figure}
+
+Por outro lado, o tamanho estático das regiões cresce de forma inversa ao número de regiões eliminadas. Pois a técnica de formação de NET continua a adicionar instruções na região até que a próxima instrução seja o nó de entrada de outra região. Desse modo, as políticas que eliminam um maior número de regiões, o tamanho estático das regiões é maior em relação ao tamanho estático das regiões formadas por políticas de gerenciamento que mantém um maior número de regiões na cache. Como visto na Figura \ref{fig:avg-reg-net}, o tamanho estático para a política de Flush When Full é até duas vezes maior que o tamanho estático para a política de Fine Grained. 
+
+\begin{figure}[!ht]
+	\centering
+\includegraphics[scale=0.4]{./figs/milc-average-reg}
+\caption{Tamanho Estático Médio das Regiões}
+\label{fig:avg-reg-net}
+\end{figure}
+
+\subsection{NET e BWAVES}
+
+Diferente dos outros benchmarks do SPECfp2006 utilizadas, a aplicação do BWAVES possui um comportamento diferente da aplicação MILC no comportamento das políticas de gerenciamento de code cache. No Gráfico G5 é mostrada a variação de número de regiões e entre as pressões 6 e 7, onde o número de regiões total para o Flush When Full se torna menor que o número de regiões para a Coarse Grained 2. Isto ocorre devido a uma diferença entre o tamanho estático para a técnica de Flush When Full e o número de instruções traduzidas, em relação ao tamanho estático e número de instruções para a Coarse Grained 2, pois o número de instruções aumenta de forma mais expressiva para a Coarse Grained 2 neste trecho. Contudo, apesar do número de regiões ser menor, este dado não pode ser utilizado de forma isolada como indicador de custo. Pois apesar disso, a Flush When Full ainda traduz duas vezes mais instruções que a Coarse Grained 2.
+
+
+\begin{figure}[!ht]
+	\centering
+\includegraphics[scale=0.4]{./figs/bwaves-tot-reg}
+\caption{Número total de regiões para o \emph{bwaves}}
+\label{fig:tot-reg-bwaves}
+\end{figure}
+
+
+
+
 
 \newpage
 
