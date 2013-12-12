@@ -1,9 +1,7 @@
 % Exemplo de relatório tecnico do IC (http://www.ic.unicamp.br/~reltech)
 
-\documentclass[11pt,twoside]{article}
+\documentclass[12pt,twoside]{article}
 \usepackage{techrep-ic}
-
-\linespread{1.3}
 
 \usepackage[brazil]{babel}
 \usepackage[utf8]{inputenc}
@@ -15,7 +13,7 @@
 
 \usepackage
 [pdftitle={Avaliacao do Impacto de Tecnicas de Formacao de Regioes no Gerenciamento de Code cache},
-pdfauthor={G. Vieira, A. Carvalho, G. Valente, G. Piccoli, J. de Lucca},
+pdfauthor={G. Vieira, A. Carvalho, G. Piccoli, G. Valente, J. de Lucca},
 pdfsubject={Relatorio Final},
 pdfkeywords={VMs, Region Formation, Code Cache, RAIn, x86},
 pdfpagemode={UseNone},
@@ -27,6 +25,43 @@ citecolor={black},
 urlcolor={blue},
 hyperindex]
 {hyperref}
+
+
+
+\usepackage{listings}
+
+\lstset{
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize\ttfamily,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+%  deletekeywords={...},            % if you want to delete keywords from the given language
+%  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+%  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,                    % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=C,                 % the language of the code
+ % morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+%  numberstyle=\tiny\color{gray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+%  stringstyle=\color{red},     % string literal style
+  tabsize=2,                       % sets default tabsize to 2 spaces
+%  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.5,0}
+
 
 %%%COMANDOS PROPRIOS
 \newcommand{\ccache}{\emph{code cache}}
@@ -55,7 +90,7 @@ hyperindex]
 \TRMonth{12} % Numérico, 01-12
 
 % LISTA DE AUTORES PARA CAPA (sem afiliações).
-\TRAuthor{G. Vieira, A. Carvalho, G. Valente,\\G. Piccoli, J. de Lucca}
+\TRAuthor{G. Vieira, A. Carvalho,\\G. Piccoli, G. Valente, J. de Lucca}
 
 % TÍTULO PARA A CAPA (use \\ para forçar quebras de linha).
 \TRTitle{Avaliação do Impacto de Técnicas de Formação\\ de Regiões no Gerenciamento de \emph{Code Cache}}
@@ -66,7 +101,7 @@ hyperindex]
 % Nomes de autores ABREVIADOS e titulo ABREVIADO,
 % para cabeçalhos em cada página.
 %
-\markboth{Vieira, Carvalho, Valente, Piccoli e de Lucca}{Relatório Técnico}
+\markboth{Vieira, Carvalho, Piccoli, Valente e de Lucca}{Relatório Técnico}
 \pagestyle{myheadings}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,9 +111,9 @@ hyperindex]
 \title{Avaliação do Impacto de Técnicas de Formação\\ de Regiões no Gerenciamento de \emph{Code Cache}}
 
 \author{Gilvan Vieira\thanks{Instituto de Computação - Universidade Estadual de Campinas (UNICAMP)} \and
-Alisson Linhares\footnotemark[1] \and Gilberto Valente\thanks{Faculdade de Engenharia Mecânica - Universidade Estadual de Campinas (UNICAMP)} \and Guilherme Piccoli\footnotemark[1] \and Jonatas de Lucca\thanks{Instituto Eldorado}}
+Alisson Linhares\footnotemark[1] \and Guilherme Piccoli\footnotemark[1] \and Gilberto Valente\thanks{Faculdade de Engenharia Mecânica - Universidade Estadual de Campinas (UNICAMP)} \and Jonatas de Lucca\thanks{Instituto Eldorado}}
 
-\date{2013-12-11}
+\date{2013-12-12}
 
 \maketitle
 
@@ -102,34 +137,34 @@ Tradutores dinâmicos são muito mais usados, pois a tradução estática é mui
 
 
 \subsection{Motivação}
-Tradutores dinâmicos de binários utilizam informações sobre o comportamento em tempo de execução de um programa \guest~ para melhorar o desempenho deste. Uma abordagem para se atingir esse objetivo é o perfilamento contínuo, para se obter informações dos trechos ditos quentes de um programa - pode-se então efetuar otimização nesses fragmentos de código, que são responsáveis pela maior parte do tempo de execução do programa \cite{guido-2012}. Em geral, o processo de detecção de código quente, otimização e execução é subdividido em quatro etapas: primeiramente, analisa-se o conjunto de instruções executadas buscando determinar o fluxo de execução da aplicação; em seguida, é feita a tradução (em geral com otimização) dos fragmentos quentes de código. Então os blocos de código traduzidos são armazenados em uma estrutura denominada \ccache~, de forma que seja possível executá-los;  finalmente, o bloco de código traduzido é executado diretamente da \ccache~pelo resto da execução da aplicação, ou até que seja removido da \cache~para fornecer espaço para novas traduções \cite{kim-2004}.
+Os tradutores dinâmicos de binários se utilizam de informações sobre o comportamento em tempo de execução de um programa \guest~ para melhorar o desempenho deste. Uma abordagem para se atingir esse objetivo é o perfilamento contínuo, para se obter informações dos trechos ditos quentes de um programa - pode-se então efetuar otimização nesses fragmentos de código, que são responsáveis pela maior parte do tempo de execução do programa \cite{guido-2012}. Em geral, o processo de detecção de código quente, otimização e execução é subdividido em quatro etapas: primeiramente, analisa-se o conjunto de instruções executadas buscando determinar o fluxo de execução da aplicação; em seguida, é feita a tradução (em geral com otimização) dos fragmentos quentes de código. Então os blocos de código traduzidos são armazenados em uma estrutura denominada \ccache~- ou simplesmente \cache~-, de forma que seja possível executá-los;  finalmente, o bloco de código traduzido é executado diretamente da \ccache~pelo resto da execução da aplicação, ou até que seja removido da \cache~para fornecer espaço para novas traduções \cite{kim-2004}.
 
-Para garantir que não seja desperdiçado tempo na otimização de código, o tradutor dinâmico agrupa instruções por regiões de código, que são unidades de execução supostamente quentes - ou seja, é esperado que regiões contenham trechos do código executados múltiplas vezes, como laços. As otimizações são aplicadas no escopo de tais regiões. A formação de regiões é importante principalmente no que toca a qualidade das otimizações realizadas no código \guest, pois espera-se que tais otimizações, por serem custosas, sejam aplicadas em trechos de significativo impacto no tempo total de execução da aplicação. Além disso, a formação de regiões permite que sejam aplicadas transformações de código mais agressivas, pois o escopo das otimizações aumenta.
+Para garantir que não seja desperdiçado tempo na otimização de código pouco executado, o tradutor dinâmico agrupa instruções por regiões de código, que são unidades de execução supostamente quentes - ou seja, é esperado que regiões contenham trechos do código executados múltiplas vezes, como laços. As otimizações são aplicadas no escopo de tais regiões. A formação de regiões é importante principalmente no que toca a qualidade das otimizações realizadas no código \guest, pois espera-se que tais otimizações, por serem custosas, sejam aplicadas em trechos de significativo impacto no tempo total de execução da aplicação. Além disso, a formação de regiões permite que sejam aplicadas transformações de código mais agressivas, pois o escopo das otimizações aumenta.
 
-Um fator por vezes limitador do desempenho de máquinas virtuais, e complicador de sua implementação, é a \ccache. Tal estrutura - que na seção \ref{sec-codecache} será explicada em mais detalhes - consiste numa coleção de códigos já traduzidos e prontos para a execução; de fato, a execução ocorre na própria \ccache~. O grande problema aqui é que tal \cache~possui tamanho limitado e se faz necessária uma política de gerenciamento da mesma, pois conforme novas regiões são criadas, mais espaço da \ccache~é usado, de modo que há a necessidade de remover regiões da mesma. É fato também que programas possuem fases \cite{program-phases}, logo manter regiões \emph{ad eternum} na \ccache~é desnecessário, pois as regiões são quentes apenas em determinadas fases da aplicação. Assim, o uso de perfilamento e uma técnica efetiva de formação de regiões permite aumentar a eficiência da \ccache~através da criação de regiões realmente quentes.
+Um fator por vezes limitador do desempenho de máquinas virtuais, e complicador de sua implementação, é a \ccache. Tal estrutura - que na seção \ref{sec-codecache} será explicada em mais detalhes - consiste numa coleção de códigos já traduzidos e prontos para a execução; de fato, a execução ocorre na própria \ccache. O grande problema aqui é que tal \cache~possui tamanho limitado e se faz necessária uma política de gerenciamento da mesma, pois conforme novas regiões são criadas, mais espaço da \ccache~é usado, de modo que é preciso remover regiões da estrutura. É fato também que programas possuem fases \cite{program-phases}, logo manter regiões \emph{ad eternum} na \ccache~é desnecessário, pois as regiões são quentes apenas em determinadas fases da aplicação. Assim, o uso de perfilamento e uma técnica efetiva de formação de regiões permite aumentar a eficiência da \ccache~através da criação de regiões realmente quentes.
 
-Nosso trabalho busca especialmente avaliar a relação entre técnicas de formação de regiões, modos de perfilamento e políticas de gerenciamento de \ccache~. Almejamos com isso apresentar um resultado que seja um facilitador na escolha de uma técnica de formação de regiões em conjunto com uma política de gerenciamento de \ccache~para um projeto de máquina virtual. 
+Nosso trabalho busca especialmente avaliar a relação entre técnicas de formação de regiões, modos de perfilamento e políticas de gerenciamento de \ccache. Almejamos com isso apresentar um resultado que seja um facilitador na escolha de uma técnica de formação de regiões em conjunto com uma política de gerenciamento de \ccache~para um projeto de máquina virtual.
 
 
 \section{Objetivos}
-Nosso objetivo consiste em apresentar estatísticas sobre a relação de técnicas de formação de regiões com políticas de gerenciamento de \ccache~. Buscamos embasar uma escolha do par técnica de formação/política de gerenciamento que permita obter o máximo desempenho em implementações de máquinas virtuais; para tanto, apresentaremos avaliações qualitativas e quantitativas acerca do desempenho de \benchmarks~variando as técnicas de formação de regiões bem como as políticas de gerenciamento da \ccache~. Além disso, uma análise sobre o método de perfilamento usado e suas implicações no desempenho da técnica de formação de regiões é apresentada.
+Nosso objetivo consiste em apresentar estatísticas sobre a relação de técnicas de formação de regiões com políticas de gerenciamento de \ccache. Buscamos embasar uma escolha do par técnica de formação/política de gerenciamento que permita obter o máximo desempenho em implementações de máquinas virtuais; para tanto, apresentaremos avaliações qualitativas e quantitativas acerca do desempenho de \benchmarks~variando as técnicas de formação de regiões bem como as políticas de gerenciamento da \ccache. Além disso, uma análise sobre o método de perfilamento usado e suas implicações no desempenho da técnica de formação de regiões é apresentada.
 
 
 \section{Trabalhos relacionados}
-Zinsly \cite{thesis-zinsly} apresenta, em sua dissertação de mestrado, um estudo comparativo entre técnicas de formação de regiões. Tal estudo pode ser considerado inovador, visto que a implementação de múltiplas técnicas de formação de regiões é muito complicada. Na dissertação foi usada uma abordagem que busca simular o comportamento da execução de uma aplicação usando um autômato, do mesmo modo que no presente trabalho (veja seção \ref{sec-metodologia}). Foram levantadas várias estatísticas sobre o desempenho das aplicações ao se usar variadas técnicas de formação de regiões; análises dessas estatísticas levaram à conclusão de que para aplicativos do benchmark SPEC \cite{spec-url}, as técnicas NET e MRET2 (ambas descritas na seção \ref{sec-formacao}) se mostram mais eficientes, ao passo que para o benchmark SYSMark \cite{sysmark-url} a técnica LEF - que consiste em agrupar funções por regiões, e foi proposta na dissertação - é mais interessante. 
+Zinsly \cite{thesis-zinsly} apresenta, em sua dissertação de mestrado, um estudo comparativo entre técnicas de formação de regiões. Tal estudo pode ser considerado inovador, visto que a implementação de múltiplas técnicas de formação de regiões é muito complicada. Na dissertação foi usada uma abordagem que busca simular o comportamento da execução de uma aplicação usando um autômato, do mesmo modo que no presente trabalho (veja seção \ref{sec-metodologia}). Foram levantadas várias estatísticas sobre o desempenho das aplicações ao se usar variadas técnicas de formação de regiões; análises dessas estatísticas levaram à conclusão de que para aplicativos do \emph{benchmark} SPEC \cite{spec-url}, as técnicas NET e MRET2 (ambas descritas na seção \ref{sec-formacao}) se mostram mais eficientes, ao passo que para o \emph{benchmark} SYSMark \cite{sysmark-url} a técnica LEF - que consiste em agrupar funções por regiões, e foi proposta na dissertação - é mais interessante. 
 
-Hazelwood e Smith \cite{hazelwood-2002} apresentam um estudo sobre técnicas de gerenciamento de \ccache~. São várias as políticas avaliadas, como \flush, \emph{Least-Recently Accessed} (comumente chamada de \emph{Least-Recently Used}), \finefifo~(denominada no artigo como LRC, ou \emph{Least-Recently Created}),\emph{ Largest Element}, entre outras. Levando em conta critérios como fragmentação da \ccache~, complexidade de implementação e taxa de \emph{miss}, os resultados apontam a política \finefifo~como sendo a de melhor custo/benefício, pois consegue reduzir a taxa de \emph{miss} para um valor próximo da metade do obtido ao se usar a técnica \flush.
+Hazelwood e Smith \cite{hazelwood-2002} apresentam um estudo sobre técnicas de gerenciamento de \ccache. São várias as políticas avaliadas, como \flush, \emph{Least-Recently Accessed} (comumente chamada de \emph{Least-Recently Used}), \finefifo~(denominada no artigo como LRC, ou \emph{Least-Recently Created}),\emph{ Largest Element}, entre outras. Levando em conta critérios como fragmentação da \ccache, complexidade de implementação e taxa de \emph{miss}, os resultados apontam a política \finefifo~como sendo a de melhor custo/benefício, pois consegue reduzir a taxa de \emph{miss} para um valor próximo da metade do obtido ao se usar a técnica \flush.
 
-No trabalho de Hazelwood e Smith \cite{kim-2004} são exploradas políticas de gerenciamento da \ccache~do tipo \coarsefifo, onde as regiões são agrupadas e removidas ao mesmo tempo, buscando reduzir o custo de se iniciar o processo de remoção para apenas uma região. Os autores utilizaram o tradutor dinâmico de binários DynamoRIO \cite{dynamorio-url} para gerar as regiões e alimentar o simulador de \ccache~, que por sua vez implementa as várias técnicas analisadas. Também neste trabalho foi construído um modelo analítico de custo, obtido através do perfilamento do DynamoRIO, fornecendo informações sobre o custo da realização de tarefas como remoção de regiões, remoção de encadeamento e de tradução. Seus resultados mostraram que o uso de uma granularidade média para um política FIFO de gerenciamento, resulta em um bom balanceamento entre faltas na \cache~e custo total.
+No trabalho de Hazelwood e Smith \cite{kim-2004} são exploradas políticas de gerenciamento da \ccache~do tipo \coarsefifo, onde as regiões são agrupadas, e a remoção é por agrupamento, e não por região; busca-se assim reduzir o custo de se iniciar o processo de remoção para apenas uma região. Os autores utilizaram o tradutor dinâmico de binários DynamoRIO \cite{dynamorio-url} para gerar as regiões e alimentar o simulador de \ccache, que por sua vez implementa as várias técnicas analisadas. Também neste trabalho foi construído um modelo analítico de custo, obtido através do perfilamento do DynamoRIO, fornecendo informações sobre o custo da realização de tarefas como remoção de regiões, remoção de encadeamento e de tradução. Seus resultados mostraram que o uso de uma granularidade média para um política FIFO de gerenciamento resulta em um bom balanceamento entre faltas na \cache~e custo total.
 
 
 \section{Metodologia}
 \label{sec-metodologia}
-A unidade de código que vamos analisar são os traços dinâmicos. Traços dinâmicos são registros das instruções executadas por um programa dentro de um ambiente virtualizado que são armazenados em um arquivo para posterior análise - para gerar os traços usados nesse trabalho, foi utilizado o interpretador de código x86 denominado \emph{bochs} \cite{bochs-url}. Os traços possuem estruturas de dados que descrevem as instruções executadas, como seus \emph{opcodes}, operadores, etc., além do tamanho das instruções e de uma \emph{flag} que indica se a estrutura representa uma instrução executada ou de um endereço de memória que foi acessado.
+A unidade de código que vamos analisar são os traços dinâmicos. Traços dinâmicos são registros das instruções executadas por um programa dentro de um ambiente virtualizado que são armazenados em um arquivo para posterior análise - para gerar grande parte dos traços usados nesse trabalho, foi utilizado o interpretador de código x86 denominado \emph{bochs} \cite{bochs-url}. Os traços possuem estruturas de dados que descrevem as instruções executadas, como seus \emph{opcodes}, operadores, etc., além do tamanho das instruções e de uma \emph{flag} que indica se a estrutura representa uma instrução executada ou um endereço de memória que foi acessado.
 
-Avaliar técnicas de formação de regiões em ambientes concretos de virtualização é uma tarefa muito complicada - pequenas modificações teóricas na técnicas poderiam acarretar em profundas modificações na implementação dessas. Assim, uma solução bastante satisfatória para esse problema foi proposta por Porto et. al. \cite{guido-2012} - o dito trabalho apresenta um autômato finito determinístico que simula a execução das instruções. Tal autômato, denominado TEA (\emph{Trace Execution Automata}), lê instruções de traços dinâmicos e simula sua execução com transições entre estados - essa estrutura se assemelha visualmente a um grafo dirigido em que os nós representam instruções e as arestas indicam caminhos possíveis entre essas.
+Avaliar técnicas de formação de regiões em ambientes concretos de virtualização é uma tarefa muito complicada - pequenas modificações teóricas nas técnicas poderiam acarretar em profundas modificações na implementação dessas. Assim, uma solução bastante satisfatória para esse problema foi proposta por Porto et. al. \cite{guido-2012} - o dito trabalho apresenta um autômato finito determinístico que simula a execução das instruções. Tal autômato, denominado TEA (\emph{Trace Execution Automata}), lê instruções de traços dinâmicos e simula sua execução com transições entre estados - essa estrutura se assemelha visualmente a um grafo dirigido em que os nós representam instruções e as arestas indicam caminhos possíveis entre elas.
 
-A ferramenta RAIn, proposta por \cite{thesis-zinsly} implementa o TEA e será usada no presente trabalho para analisar tais traços. Essa ferramenta é capaz de varrer esses traços e realizar qualquer tipo de operação sobre eles, desde exibir na tela as instruções/endereços até imprimir estatísticas desejadas. A principal vantagem em se utilizar o RAIn é justamente a possibilidade de se avaliar técnicas sofisticadas sem ter que de fato implementá-las. Um pormenor de tal ferramenta é a ausência de um decodificador de instruções x86 que permita exibir as instruções numa maneira de mais alto-nível, como mnemônicos de linguagem \emph{assembly}, por exemplo. Uma biblioteca decodificadora denominada Udis86 \cite{udis86-url} foi agregada à ferramenta para tanto.
+A ferramenta RAIn, proposta por Zinsly \cite{thesis-zinsly}, implementa o TEA e será usada no presente trabalho para analisar tais traços. Essa ferramenta é capaz de varrer esses traços e realizar qualquer tipo de operação sobre eles, desde exibir na tela as instruções/endereços até imprimir estatísticas desejadas. A principal vantagem em se utilizar o RAIn é justamente a possibilidade de se avaliar técnicas sofisticadas sem ter que de fato implementá-las. Um pormenor de tal ferramenta é a ausência de um decodificador de instruções x86 que permita exibir as instruções numa maneira de mais alto-nível, como mnemônicos de linguagem \emph{assembly}, por exemplo. Uma biblioteca decodificadora denominada Udis86 \cite{udis86-url} foi agregada à ferramenta para tanto.
 
 
 \subsection{Técnicas de formação de regiões}
@@ -138,14 +173,14 @@ A unidade básica de tradução de código é o bloco básico dinâmico, que é 
 
 A técnica NET (\emph{Next-Executing Tail}) \cite{net-region} - previamente denominada MRET (\emph{Most Recently Executed Tail}) - consiste em agrupar blocos básicos dinâmicos em superblocos seguindo o seguinte critério:
 \begin{enumerate}
-\item Através de perfilamento, determina-se bons potenciais inícios de regiões - adicionam-se contadores para instruções que são alvos de saltos \qq{para trás} ou saídas de regiões já formadas;
+\item Através de perfilamento, determinam-se bons potenciais inícios de regiões - para tanto, adicionam-se contadores para instruções que são alvos de saltos \qq{para trás} ou saídas de regiões já formadas;
 
 
 \item Uma vez que um determinado contador tenha atingido um certo limiar, passa-se a incluir as instruções subsequentes na região, até que seja encontrado um critério de parada, como por exemplo, instruções que já pertençam a uma região (seja ela diferente ou a mesma que está sendo formada), instruções de salto \qq{para trás} ou até que um número máximo previamente determinado  de instruções tenham sido incluídas na região.
 \end{enumerate}
-A idéia da técnica NET é que se um caminho no programa é executado com frequência (código quente), é provável que a partir do momento de início do processo de formação de uma região tal caminho seja seguido, bastando portanto adicionar as instruções sequencialmente na região. Há o risco de erro, pois mesmo um caminho sendo quente ele não é sempre tomado; no caso de erro, a região não será composta por um caminho frequentemente usado e logo deverá ser desfeita/substituída na \ccache~.
+A idéia da técnica NET é que se um caminho no programa é executado com frequência (código quente), é provável que a partir do momento de início do processo de formação de uma região tal caminho seja seguido, bastando portanto adicionar as instruções sequencialmente na região. Há o risco de erro, pois mesmo um caminho sendo quente ele não é sempre tomado; no caso de erro, a região não será composta por um caminho frequentemente usado e logo deverá ser desfeita/substituída na \ccache.
 
-Para atenuar a chance de formar uma região fria, foi proposta uma variação da técnica NET, denominada MRET2 \cite{mret2-region}. Tal técnica segue passos parecidos com os da técnica NET, contudo a partir de um ponto de início de uma região, a técnica avalia dois caminhos, e não apenas um. Quando um ponto de início de superbloco é atingido, a técnica passa a gravar as próximas instruções até que um critério de parada seja satisfeito, mas uma região não é formada ainda. Se esse mesmo ponto de início atingir novamente o \emph{threshold}, as instruções em sequência passam a ser gravadas - assim, há dois caminhos partindo do mesmo ponto. Então, a técnica seleciona as instruções comuns entre os caminhos para formar a região, diminuindo assim a probabilidade de formar um região fria.
+Para atenuar a chance de formar uma região fria, foi proposta uma variação da técnica NET, denominada MRET2 \cite{mret2-region}. Tal técnica segue passos parecidos com os da NET, contudo a partir de um ponto de início de uma região, a técnica avalia dois caminhos, e não apenas um. Quando um ponto de início de superbloco é atingido, a técnica passa a gravar as próximas instruções até que um critério de parada seja satisfeito, mas uma região não é formada ainda. Se esse mesmo ponto de início atingir novamente o \emph{threshold}, as instruções em sequência passam a ser gravadas - assim, há dois caminhos partindo do mesmo ponto. Então, a técnica seleciona as instruções comuns entre os caminhos para formar a região, diminuindo assim a probabilidade de formar um região fria.
 
 
 \subsection{Políticas de gerenciamento de \emph{code cache}}
@@ -155,20 +190,20 @@ A \ccache~é um dos componentes centrais em um sistema de tradução dinâmica d
 Ainda que sejam similares, a \cache~usual (implementada em \emph{hardware}) e a \ccache~possuem diferenças fundamentais \cite{smith-vm-book}, tais como:
 
 \begin{enumerate}
-\item O tamanho dos blocos é variável na \ccache~;
+\item O tamanho dos blocos é variável na \ccache;
 
-\item A localização dos blocos é relevante na \ccache~, visto que esses são dependentes entre si, por causa do encadeamento de blocos (\emph{chaining});
+\item A localização dos blocos é relevante na \ccache, visto que esses são dependentes entre si, por causa do encadeamento de blocos (\emph{chaining});
 
-\item Não há cópia do conteúdo da \emph{code cache }- blocos removidos devem ser novamente traduzidos.
+\item Não há cópia do conteúdo da \ccache~- blocos removidos devem ser novamente traduzidos.
 \end{enumerate}
 
-Na prática, as implementações de \ccache~possuem um tamanho limitado - dependendo da carga de trabalho da aplicação, rapidamente pode-se esgotar o espaço na estrutura, sendo então necessário remover blocos para fornecer espaço para novas traduções \cite{kim-2004}. A política mais simples possível de gerenciamento é não remover as traduções - contudo, tal abordagem é inviável, devido ao limite físico de memória existente. Assim se faz necessário utilizar uma política de gerenciamento de exclusão de dados da \ccache~; nesse trabalho, avaliamos as seguintes políticas: \flush, \finefifo~e \coarsefifo.
+Na prática, as implementações de \ccache~possuem um tamanho limitado - dependendo da carga de trabalho da aplicação, rapidamente pode-se esgotar o espaço na estrutura, sendo então necessário remover blocos para fornecer espaço para novas traduções \cite{kim-2004}. A política mais simples possível de gerenciamento é não remover as traduções - contudo, tal abordagem é inviável, devido ao limite físico de memória existente. Assim se faz necessário utilizar uma política de gerenciamento de exclusão de dados da \ccache; nesse trabalho, avaliamos as seguintes políticas: \flush, \finefifo~e \coarsefifo.
 
 A política \flush~consiste em deixar a \ccache~ser preenchida por traduções até que o limite de sua capacidade seja atingido - quando isso ocorre, todos os blocos traduzidos são removidos de uma única vez. Uma vantagem dessa técnica é que não há necessidade de se gerenciar o encadeamento entre os blocos, além de sua fácil implementação; todavia a técnica incorre no risco de remoção de blocos ainda quentes, forçando retraduções dos mesmos. 
 
-A técnica \finefifo~é utilizada para tirar proveito da localidade temporal no acesso aos blocos traduzidos. Para isso a \ccache~é gerenciada na forma de um \emph{buffer} circular que funciona como uma fila - a primeira região adicionada será a primeira a ser excluída, quando houver necessidade. Visto que os programas possuem fases, uma clara vantagem desse modo de gerenciamento é a esperança de que regiões removidas sejam aquelas usadas em fases mais \qq{antigas} do programa, ou seja, espera-se que o impacto da remoção de um superbloco seja menor que no caso de um \emph{flush} completo, por exemplo. Como desvantagem, essa técnica exige o monitoramento das ligações de encadeamento entre superblocos, adicionando o custo de remoção dessas quando uma região é removida - além da implementação mais sofisticada.
+A técnica \finefifo~é utilizada para tirar proveito da localidade temporal no acesso aos blocos traduzidos. Para isso a \ccache~é gerenciada na forma de um \emph{buffer} circular que funciona como uma fila - a primeira região adicionada será a primeira a ser excluída, quando houver necessidade. Visto que os programas possuem fases, uma clara vantagem desse modo de gerenciamento é a expectativa de que regiões removidas sejam aquelas usadas em fases mais \qq{antigas} do programa, ou seja, espera-se que o impacto da remoção de um superbloco seja menor que no caso de um \emph{flush} completo, por exemplo. Como desvantagem, essa técnica exige o monitoramento das ligações de encadeamento entre superblocos, adicionando o custo de remoção dessas quando uma região é removida - além da implementação mais sofisticada.
 
-Por fim, a política \coarsefifo~busca reduzir justamente o custo de remoção das ligações de encadeamento entre regiões. Tal política funciona de maneira similar à \finefifo, ou seja, também funciona em forma de \emph{buffer} circular - no entanto, é feito um agrupamento de superblocos em unidades maiores dentro da \cache, que podem ser enxergadas como \qq{contêineres} de regiões. No interior dessas estruturas existem superblocos encadeados, mas quando há a necessidade de remoção na \ccache~, contêineres inteiros são removidos, de maneira que apenas é necessária a remoção das ligações de encadeamento de regiões que estão em contêineres diferentes. Uma desvantagem dessa técnica é que ao remover um contêiner, algumas regiões contidas nele podem ainda ser quentes - é interessante encontrar um balanço entre o número dessas estruturas e o impacto da remoção dos encadeamentos. Note que o caso de 1 contêiner determina uma política \flush~e conforme o número desses aumenta, temos um comportamento cada vez mais próximo da \finefifo - nossos testes foram realizados com 2, 4 e 8 contêineres.
+Por fim, a política \coarsefifo~busca reduzir justamente o custo de remoção das ligações de encadeamento entre regiões. Tal política funciona de maneira similar à \finefifo, ou seja, também funciona em forma de \emph{buffer} circular - no entanto, é feito um agrupamento de superblocos em unidades maiores dentro da \cache, que podem ser enxergadas como \qq{contêineres} de regiões. No interior dessas estruturas existem superblocos encadeados, mas quando há a necessidade de remoção na \ccache, contêineres inteiros são removidos, de maneira que apenas é necessária a remoção das ligações de encadeamento de regiões que estão em contêineres diferentes. Uma desvantagem dessa técnica é que ao remover um contêiner, algumas regiões contidas nele podem ainda ser quentes - é interessante encontrar um balanço entre o número dessas estruturas e o impacto da remoção dos encadeamentos. Note que o caso de 1 contêiner determina uma política \flush~e conforme o número desses aumenta, temos um comportamento cada vez mais próximo da \finefifo - nossos testes foram realizados com 2, 4 e 8 contêineres.
 
 
 \subsection{\emph{Benchmarks}}
@@ -189,11 +224,11 @@ A escolha de \benchmarks~pertinentes para os testes é uma tarefa fundamental pa
 Usamos as seguinte métricas para coletar estatísticas sobre as regiões geradas:
 
 \begin{itemize}
-\item Número de regiões: tal métrica determina o número total de regiões formadas por uma deterinada técnica de formação de regiões. Equivale ao número total de traduções realizadas, portanto quanto maior o número de regiões, maior o tempo gasto na tradução de código. Essa métrica pode ser boa tanto se for alta quanto se for baixa - isso depende da taxa de completude das regiões e da cobertura do código, explicadas abaixo.
+\item Número de regiões: tal métrica avalia o número total de regiões formadas por uma determinada técnica de formação de regiões. Equivale ao número total de traduções realizadas, portanto quanto maior o número de regiões, maior o tempo gasto na tradução de código. Essa métrica pode ser boa tanto se for alta quanto se for baixa - isso depende da taxa de completude das regiões e da cobertura do código, explicadas abaixo.
 
 \item Cobertura do código: tal medida descreve o percentual do número total de instruções que são executadas dentro de regiões, ou seja, a cobertura determina o quanto da execução se dá em regiões. Assim, essa métrica está relacionada à qualidade das regiões, que se forem quentes de fato, tendem a fazer a cobertura subir.
 
-\item Taxa de completude: medida bastante importante para se determinar a qualidade das regiões formadas, a completude indica a porcentagem de vezes que a região foi executada completamente, ou seja, do início ao fim. Se a completude for baixa, isso nos permite inferir que a técnica de formação de regiões está gerando regiões não-eficientes, que não estão sendo utilizadas por completo e portanto desperdiçam tempo de otimização e espaço na \ccache~.
+\item Taxa de completude: medida bastante importante para se determinar a qualidade das regiões formadas, a completude indica a porcentagem de vezes que a região foi executada completamente, ou seja, do início ao fim. Se a completude for baixa, isso nos permite inferir que a técnica de formação de regiões está gerando regiões não-eficientes, que não estão sendo utilizadas por completo e portanto desperdiçam tempo de otimização e espaço na \ccache.
 
 \item Duplicação de código: tal métrica determina a quantidade de vezes que instruções aparecem em mais de uma região, isto é, uma alta duplicação indica que estão havendo muitas retraduções de código.
 \end{itemize}
@@ -201,24 +236,52 @@ Boas técnicas de formação de regiões tendem a apresentar resultados que acom
 
 
 \subsection{Validação dos resultados}
-Para verificar a corretude das técnicas de formação de regiões e gerenciamento de \ccache~, optou-se por utilizar traços de execução sintéticos. Tais traços são gerados artificialmente e de maneira controlada. Seu conteúdo é totalmente conhecido e seu comportamento é definido visando testar os algoritmos de formação de região e \ccache~em condições específicas.
+Para verificar a corretude das técnicas de formação de regiões e gerenciamento de \ccache, optou-se por utilizar traços de execução sintéticos. Tais traços são gerados artificialmente e de maneira controlada. Seu conteúdo é totalmente conhecido e seu comportamento é definido visando testar os algoritmos de formação de regiões e gerenciamento de \cache~em condições específicas.
 
-Os traços gerados possuem apenas instruções de um mesmo tamanho fixo, o que permite validar facilmente o tamanho das regiões geradas e monitorar o uso da \ccache~. Os traços não possuem registros de acessos à memória pois essa informação não é relevante para os algoritmos testados nesse trabalho. Apenas o fluxo de execução das instruções é levado em consideração para a formação de regiões. O conteúdo das instruções simuladas (valores do \emph{opcode}) também não é utilizado. 
+Os traços gerados possuem apenas instruções de um mesmo tamanho fixo, o que permite validar facilmente o tamanho das regiões geradas e monitorar o uso da \ccache. Os traços não possuem registros de acessos à memória pois essa informação não é relevante para os algoritmos testados nesse trabalho. Apenas o fluxo de execução das instruções é levado em consideração para a formação de regiões. O conteúdo das instruções simuladas (valores do \emph{opcode}) também não é utilizado. 
 
-A geração do traço é feita utilizando endereços sequenciais arbitrários. Isso facilita a geração dos \emph{traces} e a visualização das regiões geradas.
+A geração do traço é feita utilizando endereços sequenciais arbitrários. Isso facilita a geração dos \emph{traces} e a visualização das regiões geradas. Os testes podem ser feitos variando-se o número de instruções executadas em cada traço gerado. O número de regiões formadas pode ser controlado variando o número de laços de repetição presentes no traço, o número de iterações de cada laço e o número de execuções necessários para se formar uma região (\emph{threshold} do algoritmo de formação de regiões). O uso da \cache~pode ser analisado variando-se o número de regiões geradas pelo traço, o tamanho de cada região e a capacidade da \cache.% O uso de instruções de tamanho fixo facilita os cálculos necessários para essa tarefa.
 
-Os testes podem ser feitos variando-se o número de instruções executadas em cada traço gerado. O número de regiões formadas pode ser controlado variando o número de laços de repetição presentes no traço, o número de iterações de cada laço e o número de execuções necessários para se formar uma região (\qq{\emph{threshold}} do algoritmo). O uso da \cache~pode ser analizado variando-se o número de regiões geradas pelo traço, o tamanho de cada região e a capacidade da \cache. O uso de instruções de tamanho fixo facilita os cálculos necessários para essa tarefa.
+Veja por exemplo o trecho de código apresentado na figura \ref{codigo_valida}. Tal código representa um laço de tamanho $10$ que será executado $100$ vezes, seguido de uma única instrução, totalizando $1001$ instruções executadas. O traço gerado para esse código é o da figura \ref{fig-validacao}, em que 0x1 à 0x8 são instruções diversas, 0x9 é uma comparação, 0xA é um desvio condicional, a linha vermelha indica a saída do laço de repetição e a linha tracejada indica a entrada da região. Se o valor da variável \texttt{LOOP\_TOTAL} for muito baixo, a região não será formada. Caso o número de execuções do laço seja maior que o \emph{threshold}, a região será formada. Como os traços são arbitrários e podem começar e acabar em qualquer instrução, a região poderia não retornar ao interpretador (transição representada pelo nó NTE do grafo).
 
-Usando o código da tabela T como exemplo. Se o valor da variável LOOP\_TOTAL for muito baixo, a região não será formada. Caso o número de execuções do laço seja maior que o \emph{threshold}, a região será formada. Como os traços são arbitrários e podem começar e acabar em qualquer instrução, a região poderia não retornar ao interpretador (transição representada pelo nó NTE do grafo). 
+\begin{figure}[h!]
+\centering
 
-\begin{large}
-NÃO COLOQUEI A TABELA DESGRAÇADA DO JONATAS - DA UM TRAMPO DO CÃO. POR FAVOR, ALGUÉM REESCREVA A TABELA NUMA MANEIRA SEM TABELA! O GRAFO ESTÁ ABAIXO...
-\end{large}
+\begin{subfigure}[b]{0.3\textwidth}
 
-\begin{figure}[!ht]
-\includegraphics[scale=0.35]{./figs/validacao}
-\caption{Grafo de validação.}
-\label{fig-validacao}
+\lstset{linewidth=7.5cm}	
+\begin{lstlisting}
+int LOOP_TOTAL = 1000;
+int LOOP_SIZE = 10;
+
+int count=0, addr=0;
+
+for(int i=1; i<=LOOP_TOTAL; ++i)
+{
+  addr = addr + 1;
+  write(addr);
+  
+  if ( (i%LOOP_SIZE) == 0 )
+    addr = 0;
+  
+  count++;
+}
+
+addr = count + 1;
+write(addr);
+\end{lstlisting}
+	\caption{}
+	\label{codigo_valida}
+\end{subfigure}
+\qquad \qquad
+\begin{subfigure}[b]{0.3\textwidth}
+	\includegraphics[scale=0.45]{./figs/validacao}
+	\caption{}
+	\label{fig-validacao}
+\end{subfigure}
+
+\caption{Código de validação e traço gerado.}
+\label{valida_set}
 \end{figure}
 
 
@@ -227,17 +290,23 @@ Experimentos foram realizados com as técnicas de formação de regiões NET e M
 
 Como para aplicações que cabem na \cache~a política de gerenciamento não faz diferença, e aqui estamos interessados em descobrir qual o comportamento do tradutor dinâmico de acordo a política de gerenciamento. Assim para todos os resultados neste artigo, é assegurado que o tamanho da \cache~é menor do que o necessário para armazenar todas as traduções da aplicação. Para isto, foram executadas simulações onde o tamanho máximo da \cache~é ilimitado, assim obtemos o Gráfico {\large QUAL?}, que mostra na primeira coluna o tamanho em \emph{bytes} necessários para armazenar todas as regiões de cada aplicação e na segunda coluna o número de instruções traduzidas.
 
-Para assegurar o aumento da pressão na \cache~, os tamanhos da \cache~foram calculados na forma $MaxCache/n$, onde $MaxCache$ é o tamanho em \emph{bytes} obtido ao executar a aplicação no simulador com um tamanho de \cache~ilimitado e n é um fator de pressão utilizado para assegurar que a política de gerenciamento está realmente em uso.
+Para assegurar o aumento da pressão na \cache, os tamanhos da \cache~foram calculados na forma $MaxCache/n$, onde $MaxCache$ é o tamanho em \emph{bytes} obtido ao executar a aplicação no simulador com um tamanho de \cache~ilimitado e n é um fator de pressão utilizado para assegurar que a política de gerenciamento está realmente em uso.
 
-\begin{large}
-TEM UMA FIGURA LÁ QUE EU ACHO QUE NAO ENTRA NA VERSAO FINAL, POIS O GILVAN VAI CONVERTER TUDO PRA PDF, CERTO ?
-\end{large}
 
 
 \subsection{Encadeamento de traduções}
-\begin{large}
-ALISSON TAVA DIGITANDO...POR ISOS NAO COLOQUEI AQUI.
-\end{large}
+Infelizmente, o ato de traduzir uma região para o conjunto de instruções do \emph{host} é uma tarefa relativamente custosa. Por este motivo, para compensar o custo de tradução, é desejável maximizar o tempo de execução dentro das regiões traduzidas, recorrendo o mínimo possível ao gerenciador de emulação.
+
+Uma técnica bastante usada em máquinas virtuais, que reduz o impacto gerado pelos saltos entre as regiões traduzidas, é o \emph{chaining} - conhecido também como encadeamento. Esta técnica é caracterizada por substituir as chamadas para o gerenciador de emulação por instruções de saltos para as regiões alvos. O princípio consiste em verificar se o endereço alvo do salto foi previamente traduzido, e em seguida, inserir um trecho de código
+%binário
+responsável por efetuar o salto de forma direta e com o menor custo possível. Desta forma, as regiões são encadeadas dentro da \cache, evitando o desvio do fluxo de execução para o gerenciador de emulação.
+
+Apesar da vantagem em encadear as regiões traduzidas, o \emph{chaining} afeta diretamente o desempenho da política de gerenciamento de \cache. Isso pois sempre que existe a necessidade de se remover uma região, será necessário desfazer todos os encadeamentos previamente construídos, cuja região a ser removida faz parte. Por este motivo, este trabalho buscou realizar experimentos com diferentes \emph{benchmarks}, na tentativa de verificar a quantidade de \emph{chains} gerados pelas técnicas de formação de região, quando combinados com diferentes políticas de gerenciamento de \cache.
+
+Na figura {\large NAO TEM O PDF DELA!}, podemos verificar o número de \emph{chains} removidos quando a pressão da \cache~sobe. É interessante notar que a medida que o número de agrupamentos da \coarsefifo~é aumentado, o desempenho passa a se aproximar da \finefifo~- conforme explicado na seção \ref{sec-codecache} -, removendo uma quantidade substancial de \emph{chains}. Devido ao fato de que a \coarsefifo divide a \cache em grupos, é natural que o aumento da granularidade faça com que os algoritmos apresentem um desempenho similar.
+
+Foi verificado ainda que, quando o número de agrupamentos chega a uma determinada proporção da \cache, seu desempenho começa a degradar, pelo fato da quantidade de elementos presente no tal agrupamento formar mais \emph{chains} entre as regiões fora dele do que que nas regiões internas a ele - pudemos verificar uma perda de desempenho bastante acentuada quando o agrupamento ultrapassou a granularidade $8$.
+
 
 \subsection{Influência do \emph{profiler}}
 Um dos grandes desafios na formação de regiões é a detecção de código quente, isto é, trechos em programas que são executados com grande frequência. O papel do \emph{profiler} é o de auxiliar o algoritmo de formação de regiões, armazenando estatísticas de execução de pontos específicos em um determinado programa. Esses pontos perfilados são escolhidos com base em uma condição previamente estabelecida, podendo por exemplo, ser imposta pelo algoritmo de formação de regiões. 
@@ -250,77 +319,55 @@ Além de apresentar um aquecimento incremental, a política de perfilamento orig
 
 Buscando melhorar a abordagem de perfilamento adotada pelo RAIn, desenvolvemos duas técnicas de resfriamento do \emph{profiler}, o \emph{full reset} e o \emph{partial reset}. A técnica de \emph{full reset} consiste em resetar todos endereços perfilados sempre que uma região é criada. Isso garante que somente as regiões que são utilizadas muito frequentemente, em fases específicas do programa, consigam atingir o limiar mínimo necessário para serem consideradas quentes. Já as técnicas de \emph{partial reset}, reinicializa somente os contadores dos endereços que são alvos de salto e fazem parte das regiões. Isto garante que após a remoção de uma região, essa, por sua vez, só  poderá ser inserida novamente na \cache~quando atingir o limiar de aquecimento imposto pelo \emph{profiler}.
 
-Com base nos experimentos realizados, verificamos que o total de traduções geradas pelo NET, na ausência de \cache~e fazendo uso da política original de perfilamento, é superior a taxa de traduções quando aplicamos algumas das técnicas de resfriamento sugeridas. Entretanto, na presença de \cache~, a formação de regiões passa a ser afetada pela política de gerenciamento de \cache~, sempre que há uma necessidade de liberar espaços para novas traduções. Assim, quanto maior a pressão sobre a \cache~, mais regiões serão removidas, e consequentemente, mais instruções serão retraduzidas. Este efeito pode ser visualizado na Figura \ref{fig-reset-trans}, onde a medida que a pressão sobre a \cache~cresce, o número total de instruções traduzidas aumenta. Contudo, este aumento é muito menor quando o perfilamento utiliza algumas das políticas de resfriamento sugeridas.
+Com base nos experimentos realizados, verificamos que o total de traduções geradas pelo NET, na ausência de \cache~e fazendo uso da política original de perfilamento, é superior a taxa de traduções quando aplicamos algumas das técnicas de resfriamento sugeridas. Entretanto, na presença de \cache, a formação de regiões passa a ser afetada pela política de gerenciamento de \cache, sempre que há uma necessidade de liberar espaços para novas traduções. Assim, quanto maior a pressão sobre a \cache, mais regiões serão removidas, e consequentemente, mais instruções serão retraduzidas. Este efeito pode ser visualizado na Figura {\large Qual?}, onde a medida que a pressão sobre a \cache~cresce, o número total de instruções traduzidas aumenta. Contudo, este aumento é muito menor quando o perfilamento utiliza algumas das políticas de resfriamento sugeridas.
 
-\begin{figure}[!ht]
-	\centering
-\includegraphics[scale=0.4]{./figs/reset-translate-inst}
-\caption{Total de Instruções Traduzidas}
-\label{fig-reset-trans}
+\begin{large}
+NOVAMENTE FIGURA! O INTERESSANTE EH TER TODAS NO MESMO FORMATO!
+\end{large}
+
+
+É interessante notar, que apesar da redução do número total de traduções, a taxa de cobertura com o uso de um \emph{partial reset} é bem próxima da obtida pela política sem reset. Isso se deve ao fato, que o código gerado passa a apresentar uma taxa de completude muito superior, à medida que a pressão da \cache~aumenta, conforme visualizado na figura {\large Qual?}. Isso significa que com o resfriamento do \emph{profiler} as regiões são executadas completamente com uma maior frequência.
+
+
+
+\subsection{NET e as políticas de gerenciamento de \emph{cache}}
+\begin{large}
+COLOCAR DEPOIS
+\end{large}
+
+\begin{large}
+ABAIXO AS FIGURAS \ref{fig-num_regs}, \ref{fig-completude1} e \ref{fig-cobertura1} QUE COLOQUEI COMO MODELO, DEPOIS COMPLETAMOS AS OUTRAS
+\end{large}
+
+\begin{figure}[h!]
+\includegraphics[scale=0.4]{./figs/regions-number}
+\caption{Número de regiões.}
+\label{fig-num_regs}
 \end{figure}
 
+Agora, 2 figuras lado a lado !
 
-É interessante notar, que apesar da redução do número total de traduções, a taxa de cobertura com o uso de um \emph{partial reset} é bem próxima da obtida pela política sem reset. Isso se deve ao fato, que o código gerado passa a apresentar uma taxa de completude muito superior, à medida que a pressão da \cache~aumenta, conforme visualizado nas Figuras \ref{fig-completude1} e \ref{fig-cobertura1}. Isso significa que com o resfriamento do \emph{profiler} as regiões são executadas completamente com uma maior frequência.
-
-\begin{figure}[!ht]
+\begin{figure}[h!]
         \centering
         \begin{subfigure}[b]{0.45\textwidth}
-                \includegraphics[width=\textwidth]{./figs/reset-completion-ratio}
+                \includegraphics[width=\textwidth]{./figs/completion-reset}
                 \caption{Completude}
                 \label{fig-completude1}
         \end{subfigure}
         \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
                 \begin{subfigure}[b]{0.45\textwidth}
-                \includegraphics[width=\textwidth]{./figs/reset-dynamic-cov}
+                \includegraphics[width=\textwidth]{./figs/region-coverage-reset}
                 \caption{Cobertura}
                 \label{fig-cobertura1}
         \end{subfigure}
 \caption{Dois graficos lado-a-lado...}
 \end{figure}
 
-
-\subsection{NET e Políticas de Gerenciamento de \emph{Cache}}
-
-No gerenciamento da code cache o número de regiões removidas variam de acordo com a política aplicada. Na Flush When Full todas as regiões presentes na code cache são eliminadas ao mesmo tempo. Já a política aplicada para Coarse Grained FIFO remove um número médio de regiões, em que as regiões são agrupadas em blocos FIFO e dessa forma as regiões pertencentes ao mesmo bloco são eliminadas em conjunto. Por fim, a política que elimina o menor número de regiões é a Fine Grained FIFO, onde uma região é eliminada por vez até que seja possível inserir uma nova região.
-Por consequência quanto maior for o número de regiões eliminadas na técnica de gerenciamento de cache, maior será o número de instruções que serão interpretadas. Como pode ser visto na Figura~\ref{fig:freq_nte}  que exibe o número de instruções interpretadas em relação a redução da cache para cada política de gerenciamento. Como esperado, a Flush When Full interpreta mais instruções. Isso se deve ao fato dessa política remover um número maior de regiões, quando comparada com outras técnicas. Para as políticas de gereciamento FIFO, a Coarse interpreta mais instruções quanto menor for a granularidade, ou seja, maior o tamanho um bloco FIFO. Por fim, A Fine Grained FIFO apresenta melhor resultado ao eliminar poucas regiões por vez tem a necessidade de retraduzir menos em comparação as técnicas anteriores. 
-
-\begin{figure}[!ht]
-	\centering
-\includegraphics[scale=0.4]{./figs/milc-interp-inst}
-\caption{Total de Instruções Emuladas por Interpretação no \emph{milc}}
-\label{fig:freq_nte}
-\end{figure}
-
-Por outro lado, o tamanho estático das regiões cresce de forma inversa ao número de regiões eliminadas. Pois a técnica de formação de NET continua a adicionar instruções na região até que a próxima instrução seja o nó de entrada de outra região. Desse modo, as políticas que eliminam um maior número de regiões, o tamanho estático das regiões é maior em relação ao tamanho estático das regiões formadas por políticas de gerenciamento que mantém um maior número de regiões na cache. Como visto na Figura \ref{fig:avg-reg-net}, o tamanho estático para a política de Flush When Full é até duas vezes maior que o tamanho estático para a política de Fine Grained. 
-
-\begin{figure}[!ht]
-	\centering
-\includegraphics[scale=0.4]{./figs/milc-average-reg}
-\caption{Tamanho Estático Médio das Regiões}
-\label{fig:avg-reg-net}
-\end{figure}
-
-\subsection{NET e BWAVES}
-
-Diferente dos outros benchmarks do SPECfp2006 utilizadas, a aplicação do BWAVES possui um comportamento diferente da aplicação MILC no comportamento das políticas de gerenciamento de code cache. No Gráfico G5 é mostrada a variação de número de regiões e entre as pressões 6 e 7, onde o número de regiões total para o Flush When Full se torna menor que o número de regiões para a Coarse Grained 2. Isto ocorre devido a uma diferença entre o tamanho estático para a técnica de Flush When Full e o número de instruções traduzidas, em relação ao tamanho estático e número de instruções para a Coarse Grained 2, pois o número de instruções aumenta de forma mais expressiva para a Coarse Grained 2 neste trecho. Contudo, apesar do número de regiões ser menor, este dado não pode ser utilizado de forma isolada como indicador de custo. Pois apesar disso, a Flush When Full ainda traduz duas vezes mais instruções que a Coarse Grained 2.
-
-
-\begin{figure}[!ht]
-	\centering
-\includegraphics[scale=0.4]{./figs/bwaves-tot-reg}
-\caption{Número total de regiões para o \emph{bwaves}}
-\label{fig:tot-reg-bwaves}
-\end{figure}
-
-
-
-
-
 \newpage
 
 \section{Conclusões}
 \begin{large}
-BETO/GILVAN ESTAVAM, DIGITANDO, POR ISSO EU NAO COLOQUEI ESSA SEÇÃO..
+A FAZER - DEPOIS Q A PARTE 5 ESTIVER PRONTA
 \end{large}
 
 
