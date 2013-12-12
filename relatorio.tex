@@ -288,10 +288,16 @@ write(addr);
 \section{Resultados}
 Experimentos foram realizados com as técnicas de formação de regiões NET e MRET2, explorando as políticas de gerenciamento de \ccache~: \flush, \finefifo~e \coarsefifo~com granularidade 2, 4 e 8. 
 
-Como para aplicações que cabem na \cache~a política de gerenciamento não faz diferença, e aqui estamos interessados em descobrir qual o comportamento do tradutor dinâmico de acordo a política de gerenciamento. Assim para todos os resultados neste artigo, é assegurado que o tamanho da \cache~é menor do que o necessário para armazenar todas as traduções da aplicação. Para isto, foram executadas simulações onde o tamanho máximo da \cache~é ilimitado, assim obtemos o Gráfico {\large QUAL?}, que mostra na primeira coluna o tamanho em \emph{bytes} necessários para armazenar todas as regiões de cada aplicação e na segunda coluna o número de instruções traduzidas.
+Como para aplicações que cabem na \cache~a política de gerenciamento não faz diferença, e aqui estamos interessados em descobrir qual o comportamento do tradutor dinâmico de acordo a política de gerenciamento. Assim para todos os resultados neste artigo, é assegurado que o tamanho da \cache~é menor do que o necessário para armazenar todas as traduções da aplicação. Para isto, foram executadas simulações onde o tamanho máximo da \cache~é ilimitado, assim obtemos o Gráfico \ref{fig-cache-sizes}~, que mostra na primeira coluna o tamanho em \emph{bytes} necessários para armazenar todas as regiões de cada aplicação e na segunda coluna o número de instruções traduzidas.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[scale=0.5]{./figs/cache-sizes}
+\caption{Tamanho da cache sem política de gerenciamento.}
+\label{fig-cache-sizes}
+\end{figure}
 
 Para assegurar o aumento da pressão na \cache, os tamanhos da \cache~foram calculados na forma $MaxCache/n$, onde $MaxCache$ é o tamanho em \emph{bytes} obtido ao executar a aplicação no simulador com um tamanho de \cache~ilimitado e n é um fator de pressão utilizado para assegurar que a política de gerenciamento está realmente em uso.
-
 
 
 \subsection{Encadeamento de traduções}
@@ -303,7 +309,15 @@ responsável por efetuar o salto de forma direta e com o menor custo possível. 
 
 Apesar da vantagem em encadear as regiões traduzidas, o \emph{chaining} afeta diretamente o desempenho da política de gerenciamento de \cache. Isso pois sempre que existe a necessidade de se remover uma região, será necessário desfazer todos os encadeamentos previamente construídos, cuja região a ser removida faz parte. Por este motivo, este trabalho buscou realizar experimentos com diferentes \emph{benchmarks}, na tentativa de verificar a quantidade de \emph{chains} gerados pelas técnicas de formação de região, quando combinados com diferentes políticas de gerenciamento de \cache.
 
-Na figura {\large NAO TEM O PDF DELA!}, podemos verificar o número de \emph{chains} removidos quando a pressão da \cache~sobe. É interessante notar que a medida que o número de agrupamentos da \coarsefifo~é aumentado, o desempenho passa a se aproximar da \finefifo~- conforme explicado na seção \ref{sec-codecache} -, removendo uma quantidade substancial de \emph{chains}. Devido ao fato de que a \coarsefifo divide a \cache em grupos, é natural que o aumento da granularidade faça com que os algoritmos apresentem um desempenho similar.
+Na Figura \ref{fig-milc-chain}~, podemos verificar o número de \emph{chains} removidos quando a pressão da \cache~sobe. É interessante notar que a medida que o número de agrupamentos da \coarsefifo~é aumentado, o desempenho passa a se aproximar da \finefifo~- conforme explicado na seção \ref{sec-codecache} -, removendo uma quantidade substancial de \emph{chains}. Devido ao fato de que a \coarsefifo divide a \cache em grupos, é natural que o aumento da granularidade faça com que os algoritmos apresentem um desempenho similar.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[scale=0.4]{./figs/net-milc-chaining}
+\caption{Número de encadeamentos removidos para aplicação \emph{milc} e a técnica NET.}
+\label{fig-milc-chain}
+\end{figure}
+
 
 Foi verificado ainda que, quando o número de agrupamentos chega a uma determinada proporção da \cache, seu desempenho começa a degradar, pelo fato da quantidade de elementos presente no tal agrupamento formar mais \emph{chains} entre as regiões fora dele do que que nas regiões internas a ele - pudemos verificar uma perda de desempenho bastante acentuada quando o agrupamento ultrapassou a granularidade $8$.
 
