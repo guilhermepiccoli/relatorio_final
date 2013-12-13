@@ -78,7 +78,6 @@ hyperindex]
 
 \begin{document}
 
-%\hyphenation{ins-tru-ções}
 %%% PÁGINA DE CAPA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 
 % Número do relatório
@@ -242,9 +241,10 @@ Os traços gerados possuem apenas instruções de um mesmo tamanho fixo, o que p
 
 A geração do traço é feita utilizando endereços sequenciais arbitrários. Isso facilita a geração dos \emph{traces} e a visualização das regiões geradas. Os testes podem ser feitos variando-se o número de instruções executadas em cada traço gerado. O número de regiões formadas pode ser controlado variando o número de laços de repetição presentes no traço, o número de iterações de cada laço e o número de execuções necessários para se formar uma região (\emph{threshold} do algoritmo de formação de regiões). O uso da \cache~pode ser analisado variando-se o número de regiões geradas pelo traço, o tamanho de cada região e a capacidade da \cache.% O uso de instruções de tamanho fixo facilita os cálculos necessários para essa tarefa.
 
-Veja por exemplo o trecho de código apresentado na figura \ref{codigo_valida}. Tal código representa um laço de tamanho $10$ que será executado $100$ vezes, seguido de uma única instrução, totalizando $1001$ instruções executadas. O traço gerado para esse código é o da figura \ref{fig-validacao}, em que 0x1 à 0x8 são instruções diversas, 0x9 é uma comparação, 0xA é um desvio condicional, a linha vermelha indica a saída do laço de repetição e a linha tracejada indica a entrada da região. Se o valor da variável \texttt{LOOP\_TOTAL} for muito baixo, a região não será formada. Caso o número de execuções do laço seja maior que o \emph{threshold}, a região será formada. Como os traços são arbitrários e podem começar e acabar em qualquer instrução, a região poderia não retornar ao interpretador (transição representada pelo nó NTE do grafo).
+Veja por exemplo o trecho de código apresentado na Figura \ref{codigo_valida}. Tal código representa um laço de tamanho $10$ que será executado $100$ vezes, seguido de uma única instrução, totalizando $1001$ instruções executadas. O traço gerado para esse código é o da Figura \ref{fig-validacao}, em que 0x1 à 0x8 são instruções diversas, 0x9 é uma comparação, 0xA é um desvio condicional, a linha vermelha indica a saída do laço de repetição e a linha tracejada indica a entrada da região. Se o valor da variável \texttt{LOOP\_TOTAL} for muito baixo, a região não será formada. Caso o número de execuções do laço seja maior que o \emph{threshold}, a região será formada. Como os traços são arbitrários e podem começar e acabar em qualquer instrução, a região poderia não retornar ao interpretador (transição representada pelo nó NTE do grafo).
 
-\begin{figure}[h!]
+
+\begin{figure}[!ht]
 \centering
 
 \begin{subfigure}[b]{0.3\textwidth}
@@ -275,7 +275,7 @@ write(addr);
 \end{subfigure}
 \qquad \qquad
 \begin{subfigure}[b]{0.3\textwidth}
-	\includegraphics[scale=0.45]{./figs/validacao}
+	\includegraphics[scale=0.5]{./figs/validacao}
 	\caption{}
 	\label{fig-validacao}
 \end{subfigure}
@@ -286,9 +286,10 @@ write(addr);
 
 
 \section{Resultados}
-Experimentos foram realizados com as técnicas de formação de regiões NET e MRET2, explorando as políticas de gerenciamento de \ccache~: \flush, \finefifo~e \coarsefifo~com granularidade 2, 4 e 8. 
+Experimentos foram realizados com as técnicas de formação de regiões NET e MRET2, explorando as políticas de gerenciamento de \ccache~: \flush, \finefifo~e \coarsefifo~com granularidades 2, 4 e 8. 
 
-Como para aplicações que cabem na \cache~a política de gerenciamento não faz diferença, e aqui estamos interessados em descobrir qual o comportamento do tradutor dinâmico de acordo a política de gerenciamento. Assim para todos os resultados neste artigo, é assegurado que o tamanho da \cache~é menor do que o necessário para armazenar todas as traduções da aplicação. Para isto, foram executadas simulações onde o tamanho máximo da \cache~é ilimitado, assim obtemos o Gráfico \ref{fig-cache-sizes}~, que mostra na primeira coluna o tamanho em \emph{bytes} necessários para armazenar todas as regiões de cada aplicação e na segunda coluna o número de instruções traduzidas.
+Uma vez que todas as traduções realizadas para uma determinada aplicação caibam na \ccache, sem que seja necessário remover regiões por falta de espaço, a política de gerenciamento não faz diferença. No presente trabalho nosso interesse recai em descobrir qual o comportamento do tradutor dinâmico de acordo a política de gerenciamento; assim, para todos os resultados neste artigo é assegurado que o tamanho da \cache~é menor do que o necessário para armazenar todas as traduções da aplicação. Para isto, foram executadas simulações onde o tamanho máximo da \cache~é ilimitado - obtivemos assim a Figura \ref{fig-cache-sizes}, que mostra na primeira coluna o tamanho em \emph{bytes} necessários para armazenar todas as regiões de cada aplicação e na segunda coluna o número de instruções traduzidas.
+
 
 \begin{figure}[!ht]
 \centering
@@ -297,29 +298,31 @@ Como para aplicações que cabem na \cache~a política de gerenciamento não faz
 \label{fig-cache-sizes}
 \end{figure}
 
-Para assegurar o aumento da pressão na \cache, os tamanhos da \cache~foram calculados na forma $MaxCache/n$, onde $MaxCache$ é o tamanho em \emph{bytes} obtido ao executar a aplicação no simulador com um tamanho de \cache~ilimitado e n é um fator de pressão utilizado para assegurar que a política de gerenciamento está realmente em uso.
+
+Para assegurar o aumento da pressão na \cache, os tamanhos da \ccache~usados nos experimentos foram calculados na forma $MaxCache/n$, onde $MaxCache$ é o tamanho em \emph{bytes} obtido ao executar a aplicação no simulador com um tamanho de \cache~ilimitado e $n$ é um fator de pressão utilizado para assegurar que a política de gerenciamento está realmente em uso.
 
 
 \subsection{Encadeamento de traduções}
-Infelizmente, o ato de traduzir uma região para o conjunto de instruções do \emph{host} é uma tarefa relativamente custosa. Por este motivo, para compensar o custo de tradução, é desejável maximizar o tempo de execução dentro das regiões traduzidas, recorrendo o mínimo possível ao gerenciador de emulação.
+Sabemos que o ato de traduzir uma região para o conjunto de instruções do \emph{host} é uma tarefa relativamente custosa. Por este motivo, para compensar o custo de tradução, é desejável maximizar o tempo de execução dentro das regiões traduzidas, recorrendo o mínimo possível ao gerenciador de emulação.
 
-Uma técnica bastante usada em máquinas virtuais, que reduz o impacto gerado pelos saltos entre as regiões traduzidas, é o \emph{chaining} - conhecido também como encadeamento. Esta técnica é caracterizada por substituir as chamadas para o gerenciador de emulação por instruções de saltos para as regiões alvos. O princípio consiste em verificar se o endereço alvo do salto foi previamente traduzido, e em seguida, inserir um trecho de código
+Uma técnica bastante usada em máquinas virtuais, que reduz o impacto gerado pelos saltos entre as regiões traduzidas, é o \emph{chaining} - conhecido também como encadeamento. Esta técnica é caracterizada por substituir as chamadas para o gerenciador de emulação por instruções de saltos para as regiões-alvo. O princípio consiste em verificar se o endereço alvo do salto foi previamente traduzido, e em seguida, inserir um trecho de código
 %binário
 responsável por efetuar o salto de forma direta e com o menor custo possível. Desta forma, as regiões são encadeadas dentro da \cache, evitando o desvio do fluxo de execução para o gerenciador de emulação.
 
-Apesar da vantagem em encadear as regiões traduzidas, o \emph{chaining} afeta diretamente o desempenho da política de gerenciamento de \cache. Isso pois sempre que existe a necessidade de se remover uma região, será necessário desfazer todos os encadeamentos previamente construídos, cuja região a ser removida faz parte. Por este motivo, este trabalho buscou realizar experimentos com diferentes \emph{benchmarks}, na tentativa de verificar a quantidade de \emph{chains} gerados pelas técnicas de formação de região, quando combinados com diferentes políticas de gerenciamento de \cache.
+Apesar da vantagem em encadear as regiões traduzidas, o \emph{chaining} afeta diretamente o desempenho da política de gerenciamento de \cache. Isso pois sempre que existe a necessidade de se remover uma região, será necessário desfazer todos os encadeamentos previamente construídos, cuja região a ser removida faz parte. Por este motivo, este trabalho buscou realizar experimentos com diferentes \emph{benchmarks}, na tentativa de verificar a quantidade de \emph{chains} gerados pelas técnicas de formação de regiões, quando combinados com diferentes políticas de gerenciamento de \cache.
 
-Na Figura \ref{fig-milc-chain}~, podemos verificar o número de \emph{chains} removidos quando a pressão da \cache~sobe. É interessante notar que a medida que o número de agrupamentos da \coarsefifo~é aumentado, o desempenho passa a se aproximar da \finefifo~- conforme explicado na seção \ref{sec-codecache} -, removendo uma quantidade substancial de \emph{chains}. Devido ao fato de que a \coarsefifo divide a \cache em grupos, é natural que o aumento da granularidade faça com que os algoritmos apresentem um desempenho similar.
+Na Figura \ref{fig-milc-chain}, podemos verificar o número de \emph{chains} removidos quando a pressão da \cache~sobe. É interessante notar que a medida que o número de agrupamentos da \coarsefifo~é aumentado, o desempenho passa a se aproximar da \finefifo~- conforme explicado na seção \ref{sec-codecache} -, removendo uma quantidade substancial de \emph{chains}. Devido ao fato de que a \coarsefifo~divide a \cache~em grupos, é natural que o aumento da granularidade faça com que os algoritmos apresentem um desempenho similar.
+
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[scale=0.4]{./figs/net-milc-chaining}
-\caption{Número de encadeamentos removidos para aplicação \emph{milc} e a técnica NET.}
+\includegraphics[scale=0.45]{./figs/net-milc-chaining}
+\caption{Número de \emph{chains} removidos para aplicação \emph{milc} e a técnica NET.}
 \label{fig-milc-chain}
 \end{figure}
 
 
-Foi verificado ainda que, quando o número de agrupamentos chega a uma determinada proporção da \cache, seu desempenho começa a degradar, pelo fato da quantidade de elementos presente no tal agrupamento formar mais \emph{chains} entre as regiões fora dele do que que nas regiões internas a ele - pudemos verificar uma perda de desempenho bastante acentuada quando o agrupamento ultrapassou a granularidade $8$.
+Foi verificado ainda que, quando o número de agrupamentos chega a uma determinada proporção da \cache, seu desempenho começa a degradar, pelo fato da quantidade de elementos presente no tal agrupamento formar mais \emph{chains} entre as regiões fora dele do que nas regiões internas a ele - pudemos verificar uma perda de desempenho bastante acentuada quando o agrupamento ultrapassou a granularidade $8$.
 
 
 \subsection{Influência do \emph{profiler}}
@@ -327,75 +330,114 @@ Um dos grandes desafios na formação de regiões é a detecção de código que
 
 Como os programas de computador tendem a respeitar a localidade espacial e temporal, um perfilamento extremamente simples que pode ser aplicado é a contagem de vezes que um determinado endereço é executado. Contudo, é possível encontrar técnicas mais elaboradas, que fazem uso de propriedades estáticas dos binários, ou até mesmo, do comportamento das execuções anteriores de um dado programa.
 
-Um dos problemas da abordagem de perfilamento adotada pelo RAIn é que todos os endereços, que são alvos de saltos, são perfilados sem respeitar as mudanças de fases dos programas. Isto é, a técnica de perfilamento usada pelo RAIn não prevê que em estágios de execução diferentes um mesmo endereço pode ser executado com um frequência menor que a apresentada em outras fases da aplicação. Essa característica, aliada a um perfilamento incremental, pode gerar regiões que não são realmente quentes em uma determinada fase da aplicação, aumentando o número total de regiões formadas e prejudicando a taxa de completude.
+Um dos problemas da abordagem de perfilamento adotada originalmente pelo RAIn, é que todos os endereços alvos de saltos são perfilados sem que se respeite as mudanças de fases dos programas. Isto é, a técnica de perfilamento usada pelo RAIn não prevê que em estágios de execução diferentes um mesmo endereço pode ser executado com uma frequência menor que a apresentada em outras fases da aplicação. Essa característica, aliada a um perfilamento incremental, pode gerar regiões que não são realmente quentes em uma determinada fase da aplicação, aumentando o número total de regiões formadas e prejudicando a taxa de completude.
 
-Além de apresentar um aquecimento incremental, a política de perfilamento original do RAIn não apresenta um resfriamento das instruções. Desta forma, após a remoção, a região removida continuará quente e quando for revisitada, será retraduzida.  Com isso, o número de regiões aumenta drasticamente, pois em determinadas fases do programa a região pode ser acessada com uma frequência muito menor que em fases anteriores, não sendo necessário uma retradução.
+Além de apresentar um aquecimento incremental, a política de perfilamento original do RAIn não apresenta um resfriamento das instruções - o \emph{profiler} é cumulativo. Dessa forma, após a remoção, a região removida continuará quente e quando for revisitada será retraduzida. Com isso, o número de regiões aumenta drasticamente, pois em determinadas fases do programa a região pode ser acessada com uma frequência muito menor que em fases anteriores, não sendo necessário uma retradução.
 
-Buscando melhorar a abordagem de perfilamento adotada pelo RAIn, desenvolvemos duas técnicas de resfriamento do \emph{profiler}, o \emph{full reset} e o \emph{partial reset}. A técnica de \emph{full reset} consiste em resetar todos endereços perfilados sempre que uma região é criada. Isso garante que somente as regiões que são utilizadas muito frequentemente, em fases específicas do programa, consigam atingir o limiar mínimo necessário para serem consideradas quentes. Já as técnicas de \emph{partial reset}, reinicializa somente os contadores dos endereços que são alvos de salto e fazem parte das regiões. Isto garante que após a remoção de uma região, essa, por sua vez, só  poderá ser inserida novamente na \cache~quando atingir o limiar de aquecimento imposto pelo \emph{profiler}.
+Buscando melhorar tal abordagem de perfilamento, desenvolvemos duas técnicas de resfriamento do \emph{profiler}, o \emph{full reset} e o \emph{partial reset}. A técnica \emph{full reset} consiste em resetar todos os endereços perfilados sempre que uma região é criada. Isso garante que somente as regiões que são utilizadas muito frequentemente, em fases específicas do programa, consigam atingir o limiar mínimo necessário para serem consideradas quentes. Já a técnica de \emph{partial reset} reinicializa somente os contadores dos endereços que são alvos de salto e fazem parte das regiões. Isto garante que após a remoção de uma região, essa, por sua vez, só poderá ser inserida novamente na \cache~quando atingir o limiar de aquecimento imposto pelo \emph{profiler}.
 
-Com base nos experimentos realizados, verificamos que o total de traduções geradas pelo NET, na ausência de \cache~e fazendo uso da política original de perfilamento, é superior a taxa de traduções quando aplicamos algumas das técnicas de resfriamento sugeridas. Entretanto, na presença de \cache, a formação de regiões passa a ser afetada pela política de gerenciamento de \cache, sempre que há uma necessidade de liberar espaços para novas traduções. Assim, quanto maior a pressão sobre a \cache, mais regiões serão removidas, e consequentemente, mais instruções serão retraduzidas. Este efeito pode ser visualizado na Figura \ref{fig-milc-trans-freq}~, onde a medida que a pressão sobre a \cache~cresce, o número total de instruções traduzidas aumenta. Contudo, este aumento é muito menor quando o perfilamento utiliza algumas das políticas de resfriamento sugeridas.
+Com base nos experimentos realizados, verificamos que o total de traduções geradas pela técnica NET - na ausência de \cache~e fazendo uso da política original de perfilamento - é superior ao número de traduções quando aplicamos algumas das técnicas de resfriamento sugeridas. Entretanto, na presença de \cache, a formação de regiões passa a ser afetada pela política de gerenciamento de \ccache~sempre que há necessidade de se liberar espaço para novas traduções. Assim, quanto maior a pressão sobre a \cache, mais regiões serão removidas, e consequentemente, mais instruções serão retraduzidas. Este efeito pode ser visualizado na Figura \ref{fig-milc-trans-freq}, onde à medida que a pressão sobre a \cache~aumenta, o número total de instruções traduzidas aumenta. Contudo, este aumento é muito menor quando o perfilamento utiliza algumas das políticas de resfriamento sugeridas.
+
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[scale=0.4]{./figs/reset-translate-inst}
+\includegraphics[scale=0.5]{./figs/reset-translate-inst}
 \caption{Número de instruções traduzidas para a aplicação \emph{milc}.}
 \label{fig-milc-trans-freq}
 \end{figure}
 
-É interessante notar, que apesar da redução do número total de traduções, a taxa de cobertura com o uso de um \emph{partial reset} é bem próxima da obtida pela política sem reset. Isso se deve ao fato, que o código gerado passa a apresentar uma taxa de completude muito superior, à medida que a pressão da \cache~aumenta, conforme visualizado nas Figuras \ref{fig-completude1} e  \ref{fig-cobertura1}. Isso significa que com o resfriamento do \emph{profiler} as regiões são executadas completamente com uma maior frequência.
+
+É interessante notar que, apesar da redução no número total de traduções, a taxa de cobertura com o uso de um \emph{partial reset} é bem próxima da obtida pela política sem \emph{reset}. Isso se deve ao fato de que o código gerado passa a apresentar uma taxa de completude muito superior, à medida que a pressão da \cache~aumenta, conforme visualizado nas Figuras \ref{fig-completude1} e  \ref{fig-cobertura1}. Isso significa que com o resfriamento do \emph{profiler}, as regiões são executadas completamente com uma maior frequência.
+
 
 \begin{figure}[!ht]
         \centering
-        \begin{subfigure}[b]{0.45\textwidth}
+        \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/reset-completion-ratio}
                 \caption{Completude}
                 \label{fig-completude1}
         \end{subfigure}
-        \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
-                \begin{subfigure}[b]{0.45\textwidth}
+        \quad 
+                \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/reset-dynamic-cov}
                 \caption{Cobertura}
                 \label{fig-cobertura1}
         \end{subfigure}
-\caption{Avaliação profiler utilizando a técnica NET e a aplicação \emph{milc}.}
+\caption{Avaliação do \emph{profiler} utilizando a técnica NET e a aplicação \emph{milc}.}
 \end{figure}
 
 
-\subsection{Impacto de Técnicas de Formação de Regiões no Gerenciamento de \emph{Code Cache}}
+\subsection{Impacto das técnicas de formação de regiões no gerenciamento de \ccache.}
+As análises apresentadas nessa seção se concentram em 2 \benchmarks: \emph{milc} e \emph{bwaves}. Essa escolha se deu pois em geral os resultados para \emph{dealII} e \emph{bzip2} acompanham os do \emph{milc}, ao passo que o \emph{benchmark} \emph{bwaves} apresenta um comportamento por vezes divergente dos demais\footnote{Segundo Anderson Linhares, bwaves é "obra do capeta".}. Quando houver apenas análises sobre um único \emph{benchmark}, significa que tal aplicativo é representativo de todos, ou seja, o comportamento em questão é similar em todos os \emph{benchmarks}. A seguir, discorremos sobre nossas avaliações e hipóteses sobre os principais resultados experimentais obtidos.
+
+A Figura~\ref{fig:freq_nte} exibe o número de instruções interpretadas em relação ao aumento da pressão na \cache. A quantidade de instruções interpretadas está diretamente ligada à política de gerenciamento de \ccache~escolhida. Quanto maior for o número de regiões eliminadas, maior será o número de instruções interpretadas. Com base nos resultados obtidos, podemos verificar que a \flush~é a política que interpreta mais instruções, seguida pela \coarsefifo. Isso se deve ao fato desses dois algoritmos descartarem uma grande quantidade de regiões por vez, quando comparadso à \finefifo, que apresenta melhor resultado.
+
 
 \begin{figure}[!ht]
         \centering
-        \begin{subfigure}[b]{0.45\textwidth}
+        \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/net-bwaves-freq-int}
                 \caption{NET}
                 \label{fig-net-bwaves-freq-int}
         \end{subfigure}
-        \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
-                \begin{subfigure}[b]{0.45\textwidth}
+        \quad
+                \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/mret-bwaves-freq-int}
                 \caption{MRET}
                 \label{fig-mret-bwaves-freq-int}
         \end{subfigure}
 \caption{Número de instruções emuladas por interpretação na aplicação \emph{bwaves}.}
+\label{fig:freq_nte}
 \end{figure}
 
+
+Diferentemente do resultado obtido na interpretação de instruções, o tamanho estático das regiões cresce de forma inversa ao número de regiões eliminadas. Um dos critérios de parada da técnica NET de formação de regiões é que, ao encontrar uma instrução já pertencente à outra região, a formação do superbloco deve parar. Assim, no caso da \flush~por exemplo, como todas as regiões são removidas de uma vez, esse critério de parada da NET é dificilmente verificado após a exclusão total das regiões da \ccache - logo, regiões com maior número de instruções são formadas. Ou seja, políticas que eliminam um maior número de regiões tendem a possuir um tamanho estático médio maior. Como podemos visualizar na Figura \ref{fig-avg-regsize}, o tamanho estático para a política \flush~ é até duas vezes maior que o tamanho estático para a política \finefifo. A técnica MRET2 faz uso dos mesmos critérios de parada adotados pela NET, de modo que apresenta um comportamento parecido.
 
 
 \begin{figure}[!ht]
         \centering
-        \begin{subfigure}[b]{0.45\textwidth}
+        \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/net-bwaves-average-reg-size}
                 \caption{NET}
                 \label{fig-net-bwaves-average-reg-size}
         \end{subfigure}
-        \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
-                \begin{subfigure}[b]{0.45\textwidth}
+        \quad 
+                \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/mret-bwaves-average-reg-size}
                 \caption{MRET}
                 \label{fig-mret-bwaves-average-reg-size}
         \end{subfigure}
-\caption{Tamanho estático médios das regiões para a aplicação \emph{bwaves}.}
+\caption{Tamanho estático médio das regiões para a aplicação \emph{bwaves}.}
+\label{fig-avg-regsize}
 \end{figure}
+
+
+{\large IGNORAR DAQUI PRA BAIXO}
+
+%=> 
+Regiões que o MRET2 gera são naturalmente menores - a cobertura é muito próxima, assim, o número de regiões deve ser maior !
+%=>
+Por outro lado, regiões da NET sao maiores e com menor completude - o que devia fazer com que o espaço da code cache acabasse mais rapido, ou seja, mais regioes deveriam ser geradas !
+
+
+
+Figura 1: 
+i) [FRACO!] FWF (Flush when full): “supostamente” destrói o criterio de parada da NET (insn que seja entrada de outra regiao), isso pois a cache esta limpa, entao nao ha comparacao com outras regioes..assim, tamanho estatico eh maior. Como comprovar? Checando a completude !!! Se for baixa, eh um indicio q isso eh verdade.
+Conclusao: FWF interage negativamente com o criterio de parada da NET. [Net4380][mret2953]
+ii)  [FRACO!] Simples ! A MRET2 tem um criterio de formação de regioes mais estrito, eh mais dificil formar uma regiao com MRET2, contudo, as regioes tendem a ser mais efetivas (cade o grafico de completude pra comprovar isso?) - claramente, o tam. estatico eh menor, mas a completude e tam. dinamico tendem a ser maiores.
+
+
+
+NET e BWAVES
+Diferente dos outros benchmarks do SPECfp2006 utilizadas, a aplicação do BWAVES possui um comportamento diferente da aplicação MILC no comportamento das políticas de gerenciamento de code cache. No Gráfico G5 é mostrada a variação de número de regiões e entre as pressões 6 e 7, onde o número de regiões total para o Flush When Full se torna menor que o número de regiões para a Coarse Grained 2. Isto ocorre devido a uma diferença entre o tamanho estático para a técnica de Flush When Full e o número de instruções traduzidas, em relação ao tamanho estático e número de instruções para a Coarse Grained 2, pois o número de instruções aumenta de forma mais expressiva para a Coarse Grained 2 neste trecho. Contudo, apesar do número de regiões ser menor, este dado não pode ser utilizado de forma isolada como indicador de custo. Pois apesar disso, a Flush When Full ainda traduz duas vezes mais instruções que a Coarse Grained 2.
+
+
+
+
+
+
+
+
 
 \begin{figure}[!ht]
         \centering
@@ -432,12 +474,9 @@ Com base nos experimentos realizados, verificamos que o total de traduções ger
 
 
 
-\newpage
-
 \section{Conclusões}
-\begin{large}
-A FAZER - DEPOIS Q A PARTE 5 ESTIVER PRONTA
-\end{large}
+blablablablablablablablablablablablablablablablablabla
+
 
 
 % bibliografia
