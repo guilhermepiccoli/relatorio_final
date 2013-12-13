@@ -11,6 +11,14 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
+\usepackage{fancybox}
+\makeatletter
+\newenvironment{CenteredBox}{% 
+\begin{Sbox}}{% Save the content in a box
+\end{Sbox}\centerline{\parbox{\wd\@Sbox}{\TheSbox}}}% And output it centered
+\makeatother
+
+
 \usepackage
 [pdftitle={Avaliacao do Impacto de Tecnicas de Formacao de Regioes no Gerenciamento de Code cache},
 pdfauthor={G. Vieira, A. Carvalho, G. Piccoli, G. Valente, J. de Lucca},
@@ -368,7 +376,7 @@ Com base nos experimentos realizados, verificamos que o total de traduções ger
 
 
 \subsection{Impacto das técnicas de formação de regiões no gerenciamento de \ccache.}
-As análises apresentadas nessa seção se concentram em 2 \benchmarks: \emph{milc} e \emph{bwaves}. Essa escolha se deu pois em geral os resultados para \emph{dealII} e \emph{bzip2} acompanham os do \emph{milc}, ao passo que o \emph{benchmark} \emph{bwaves} apresenta um comportamento por vezes divergente dos demais\footnote{Segundo Anderson Linhares, bwaves é "obra do capeta".}. Quando houver apenas análises sobre um único \emph{benchmark}, significa que tal aplicativo é representativo de todos, ou seja, o comportamento em questão é similar em todos os \emph{benchmarks}. A seguir, discorremos sobre nossas avaliações e hipóteses sobre os principais resultados experimentais obtidos.
+As análises apresentadas nessa seção se concentram em 2 \benchmarks: \emph{milc} e \emph{bwaves}. Essa escolha se deu pois em geral os resultados para todos os \benchmarks~acompanham o mesmo padrão, portanto esses 2 aplicativos são representativos de todos. Por vezes uma característica avaliada é mais perceptível em um ou outro. A seguir, discorremos sobre nossas avaliações e hipóteses sobre os principais resultados experimentais obtidos. Todas os experimentos foram efetuados utilizando-se a técnica de perfilamento \emph{partial reset}.
 
 A Figura~\ref{fig:freq_nte} exibe o número de instruções interpretadas em relação ao aumento da pressão na \cache. A quantidade de instruções interpretadas está diretamente ligada à política de gerenciamento de \ccache~escolhida. Quanto maior for o número de regiões eliminadas, maior será o número de instruções interpretadas. Com base nos resultados obtidos, podemos verificar que a \flush~é a política que interpreta mais instruções, seguida pela \coarsefifo. Isso se deve ao fato desses dois algoritmos descartarem uma grande quantidade de regiões por vez, quando comparadso à \finefifo, que apresenta melhor resultado.
 
@@ -412,71 +420,109 @@ Diferentemente do resultado obtido na interpretação de instruções, o tamanho
 \end{figure}
 
 
-{\large IGNORAR DAQUI PRA BAIXO}
-
-%=> 
-Regiões que o MRET2 gera são naturalmente menores - a cobertura é muito próxima, assim, o número de regiões deve ser maior !
-%=>
-Por outro lado, regiões da NET sao maiores e com menor completude - o que devia fazer com que o espaço da code cache acabasse mais rapido, ou seja, mais regioes deveriam ser geradas !
-
-
-
-Figura 1: 
-i) [FRACO!] FWF (Flush when full): “supostamente” destrói o criterio de parada da NET (insn que seja entrada de outra regiao), isso pois a cache esta limpa, entao nao ha comparacao com outras regioes..assim, tamanho estatico eh maior. Como comprovar? Checando a completude !!! Se for baixa, eh um indicio q isso eh verdade.
-Conclusao: FWF interage negativamente com o criterio de parada da NET. [Net4380][mret2953]
-ii)  [FRACO!] Simples ! A MRET2 tem um criterio de formação de regioes mais estrito, eh mais dificil formar uma regiao com MRET2, contudo, as regioes tendem a ser mais efetivas (cade o grafico de completude pra comprovar isso?) - claramente, o tam. estatico eh menor, mas a completude e tam. dinamico tendem a ser maiores.
-
-
-
-NET e BWAVES
-Diferente dos outros benchmarks do SPECfp2006 utilizadas, a aplicação do BWAVES possui um comportamento diferente da aplicação MILC no comportamento das políticas de gerenciamento de code cache. No Gráfico G5 é mostrada a variação de número de regiões e entre as pressões 6 e 7, onde o número de regiões total para o Flush When Full se torna menor que o número de regiões para a Coarse Grained 2. Isto ocorre devido a uma diferença entre o tamanho estático para a técnica de Flush When Full e o número de instruções traduzidas, em relação ao tamanho estático e número de instruções para a Coarse Grained 2, pois o número de instruções aumenta de forma mais expressiva para a Coarse Grained 2 neste trecho. Contudo, apesar do número de regiões ser menor, este dado não pode ser utilizado de forma isolada como indicador de custo. Pois apesar disso, a Flush When Full ainda traduz duas vezes mais instruções que a Coarse Grained 2.
-
-
-
-
-
-
-
+Note que a taxa de completude - indicador da qualidade das regiões - é superior no caso da MRET2, como pode ser visto na Figura \ref{fig-completude-bwaves}. Em especial, a política \flush~apresenta os piores resultados, por motivos já justificados no parágrafo anterior. A técnica MRET2 pois um critério de formação de regiões mais estrito - usa para tanto 2 rodadas da NET e forma regiões que possuem caminhos comuns nessas rodadas. Portanto, é de se esperar que possua completude maior, pois as regiões formadas são mais eficientes, e tendem a ser executadas completamente. A pressão da \ccache~influencia negativamente na completude, pois se o tamanho da \cache~for diminuto, a expectativa é de que regiões sejam criadas a todo momento e a cada nova região, novas estatísticas são geradas; as regiões não têm tempo de ficar executando na \cache~pois rapidamente são apagadas de lá. Além disso, no caso da NET, o decréscimo é maior conforme aumenta a pressão - nossa hipótese é que isso também se dá por influência do critério de parada da técnica, pois uma vez que a pressão é muito grande, uma maior quantidade de traduções ocorre, gerando regiões de maior tamanho estático mas menor completude.
 
 
 \begin{figure}[!ht]
         \centering
-        \begin{subfigure}[b]{0.45\textwidth}
+        \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/net-bwaves-comp-ratio}
                 \caption{NET}
                 \label{fig-net-bwaves-comp-ratio}
         \end{subfigure}
-        \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
-                \begin{subfigure}[b]{0.45\textwidth}
+        \quad
+                \begin{subfigure}[b]{0.48\textwidth}
                 \includegraphics[width=\textwidth]{./figs/mret-bwaves-comp-ratio}
                 \caption{MRET}
                 \label{fig-mret-bwaves-comp-ratio}
         \end{subfigure}
-\caption{Taxa de completudes das regiões para a aplicação \emph{bwaves}.}
+\caption{Taxa de completude das regiões para a aplicação \emph{bwaves}.}
+\label{fig-completude-bwaves}
 \end{figure}
+
+
+A taxa de cobertura das regiões, medida bastante importante para avaliar o grau de eficácia da técnica de formação, pode ser vista na Figura \ref{fig-coverage}. Tanto a técnica NET quanto MRET2 apresentam bons resultados, que naturalmente decrescem conforme a pressão na \cache~aumenta. Isso ocorre pois, quanto menor o tamanho da \ccache, maior o número de traduções que serão necessárias ao longo da execução do programa; assim, maior é o tempo gasto executando instruções via interpretação até que o \emph{threshold} seja atingido para que se efetuem as traduções. E uma vez que ocorram as tais traduções, pouca é a sobrevida delas na \ccache~devido ao grande número de \emph{flushes} que tende a ocorrer, por causa do diminuto tamanho da estrutura. Note que mais uma vez o pior resultado foi obtido pela política \flush, devido ao seu alto número de regiões excluídas por \emph{flush}.
+
 
 \begin{figure}[!ht]
         \centering
         \begin{subfigure}[b]{0.45\textwidth}
-                \includegraphics[width=\textwidth]{./figs/net-bwaves-tot-regions}
+                \includegraphics[width=\textwidth]{./figs/net-milc-coverage}
                 \caption{NET}
-                \label{fig-net-bwaves-tot-regions}
         \end{subfigure}
-        \quad %esapcço entre figuras - poderia ser \qquad ou nada...ou mais 100000 de coisas kkkkkkk
+        \quad 
                 \begin{subfigure}[b]{0.45\textwidth}
-                \includegraphics[width=\textwidth]{./figs/mret-bwaves-tot-regions}
+                \includegraphics[width=\textwidth]{./figs/mret-milc-coverage}
                 \caption{MRET}
-                \label{fig-mret-bwaves-tot-regions}
         \end{subfigure}
-\caption{Número total de regiões para a aplicação \emph{bwaves}.}
+\caption{Taxa de cobertura das regiões para aplicação \emph{milc}.}
+\label{fig-coverage}
 \end{figure}
 
 
+A respeito do número total de regiões, na Figura \ref{fig-total-regs} podemos ver que tal medida é similar para MRET2 e NET, sendo que a primeira apresenta um número levemente maior - nossa hipótese para isso é que, por seu critério estrito, a técnica MRET2 gera mais regiões de menor tamanho estático e com maior completude. Por exemplo, numa situação como a do código da Figura \ref{codigo_num-regs},  em que há um laço com uma estrutura condicional em seu interior, imagine que o \texttt{if} é tomado metade das vezes, contudo de maneira intermitente com o \texttt{else}, ou seja, a cada iteração um deles é tomado. A técnica NET geraria uma grande região com todo o laço, de modo que tal região teria baixa completude. Por outro lado, a técnica MRET2 poderia criar 3 regiões, sendo uma com o código comum do laço, uma para o \texttt{if} e outra para o \texttt{else}, todas encadeadas na \ccache. Assim, o número de regiões da MRET2 tende a ser maior que da NET. A pressão da \cache~naturalmente influencia o número de regiões - quanto maior for o número de \emph{flushes}, maior a quantidade necessária de retraduções, e portanto maior o número de regiões geradas. Note que a sobrevida das regiões cai conforme a pressão aumenta.
+
+
+\begin{figure}[!ht]
+        \centering
+        \begin{subfigure}[b]{0.48\textwidth}
+                \includegraphics[width=\textwidth]{./figs/net-bwaves-tot-regions}
+                \caption{NET}
+				\label{fig-total-regs-net}
+        \end{subfigure}
+        \quad
+                \begin{subfigure}[b]{0.48\textwidth}
+                \includegraphics[width=\textwidth]{./figs/mret-bwaves-tot-regions}
+                \caption{MRET}
+        \end{subfigure}
+\caption{Número total de regiões para a aplicação \emph{bwaves}.}
+\label{fig-total-regs}
+\end{figure}
+
+
+\begin{figure}[!ht]
+	\begin{CenteredBox}
+\lstset{linewidth=4cm}
+\begin{lstlisting}
+while(cond1) {
+  ...  
+  if (cond2) {...}
+  
+  else {...}
+}
+\end{lstlisting}
+	\end{CenteredBox}
+	\caption{Código que geraria 1 região na NET e 3 na MRET2.}
+	\label{codigo_num-regs}
+\end{figure}
+
+
+Um ponto interessante sobre a Figura \ref{fig-total-regs-net} é que, entre as pressões 5 e 7, é possível ver que a política \flush~apresenta um aumento decrescente do número de regiões geradas, sendo ultrapassada pela \coarsefifo~com granularidade 2, e no caso da pressão 10, até mesmo empatando com a \finefifo. Nossa hipótese para justificar esse fato é a de que o tamanho estático das regiões, que - conforme já foi discutido - aumenta no uso da NET com a política \flush, esteja ocasionando esse comportamento; note que maior tamanho estático implica em menor número de regiões - é como se a região contemplasse uma porção maior do código da aplicação (ainda que isso implique numa região menos eficiente e com menor completude).
+
+Por fim, a Figura \ref{fig-duplic} apresenta as medições de duplicidade de código. Tal medida se mostra bastante coerente com o esperado - podemos ver um crescimento linear na duplicidade, pois quanto maior a pressão na \cache, maior o número de retraduções, ou seja, maior o número de instruções idênticas em regiões diferentes - ainda que tais instruções estejam em regiões temporalmente dispersas, a métrica nos permite concluir que um aumento exagerado na pressão da \cache, em especial no caso da política \flush, acarreta grande quantidade de retraduções de código.
+
+
+\begin{figure}[!ht]
+        \centering
+        \begin{subfigure}[b]{0.45\textwidth}
+                \includegraphics[width=\textwidth]{./figs/net-milc-duplication}
+                \caption{NET}
+        \end{subfigure}
+        \quad 
+                \begin{subfigure}[b]{0.45\textwidth}
+                \includegraphics[width=\textwidth]{./figs/mret-milc-duplication}
+                \caption{MRET}
+        \end{subfigure}
+\caption{Duplicação de código para a aplicação \emph{milc}.}
+\label{fig-duplic}
+\end{figure}
 
 
 \section{Conclusões}
-blablablablablablablablablablablablablablablablablabla
+Com base na análise das estatísticas coletadas, podemos concluir que o uso de uma técnica de resfriamento parcial reduz consideravelmente o número de regiões traduzidas, principalmente quando usada em conjunto com uma política de gerenciamento de \cache. Verificamos que com o uso de uma técnica de resfriamento, as taxas de cobertura e completude permanecem bem próximas dos valores obtidos pela política original do RAIn, mesmo que o número de instruções traduzidas seja muito menor. Desta forma, podemos considerar que, na presença de \ccache, o uso de uma política de resfriamento pode contribuir para a melhora de desempenho geral de uma máquina virtual.
+Além do impacto causado pelo resfriamento, verificamos que o número total de \emph{chains} removidos cresce de maneira comportada entre os diferentes \benchmarks. Contudo, foi possível verificar que a granulação da política \coarsefifo~pode tornar o algoritmo pior que uma política \finefifo, caso a quantidade de agrupamentos seja muito alta.
 
+Em se tratando da relação de técnicas de formação de regiões com políticas de gerenciamento de \ccache, notamos que ambas as técnicas são satisfatórias, com uma leve vantagem para a MRET2 devido à formação de regiões mais eficientes, com maior taxa de completude. É claramente visível pelos resultados que a política \flush~não é adequada para uma máquina virtual que almeja bom desempenho - tal política se mostrou a de menor desempenho em todos os experimentos. Também um fator importante é a pressão da \ccache~- quanto menor o tamanho da \cache, maior a perda de desempenho. Entre as políticas de gerenciamento, tanto as políticas \finefifo~quanto \coarsefifo~de granularidade baixa (2 ou 4) se mostraram boas opções, sendo que a última leva vantagem pois atenua o impacto da remoção de ligações de encadeamento\cite{kim-2004}.
 
 
 % bibliografia
